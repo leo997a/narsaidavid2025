@@ -2,10 +2,10 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import KnockoutBracket from '@/components/KnockoutBracket';
-import { useStore } from '@/store/tournamentStore';
+import { useTournamentStore } from '@/store/tournamentStore';
 
 const Knockout = () => {
-  const { knockoutMatches } = useStore();
+  const { knockoutMatches } = useTournamentStore();
 
   return (
     <Layout>
@@ -13,7 +13,7 @@ const Knockout = () => {
         <h1 className="text-3xl font-bold text-tournament-accent mb-6">الأدوار الإقصائية</h1>
         
         <div className="w-full overflow-x-auto">
-          <KnockoutBracket matches={knockoutMatches} />
+          <KnockoutBracket />
         </div>
       </div>
     </Layout>
