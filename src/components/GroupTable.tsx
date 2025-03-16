@@ -28,7 +28,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
     const element = document.getElementById(`group-${group}-table`);
     if (element) {
       html2canvas(element, { 
-        backgroundColor: '#101935',
+        backgroundColor: '#0f1e45',
         scale: 2,
       }).then(canvas => {
         // Add tournament name and group to the canvas
@@ -60,86 +60,78 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
 
   return (
     <div className="space-y-4 glassmorphism p-4 bg-gradient-to-br from-tournament-navy to-tournament-blue/80 rounded-lg shadow-lg border border-tournament-accent/20">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xl font-bold text-tournament-pink">
-          المجموعة {group}
-        </h3>
-        {showControls && (
+      <div id={`group-${group}-table`} className="rounded-md overflow-hidden">
+        {/* Group Header - Styled like reference image */}
+        <div className="bg-tournament-darkNavy py-6 px-4 relative">
+          <h1 className="text-6xl font-bold text-white text-center">GROUP {group}</h1>
+          
+          {/* Decorative elements from the reference design */}
+          <div className="absolute top-[40%] left-0 w-32 h-1 bg-tournament-pink"></div>
+          <div className="absolute top-1/4 right-0 w-1 h-1 rounded-full bg-tournament-accent"></div>
+          <div className="absolute bottom-1/4 right-12 w-40 h-1 bg-tournament-accent/60"></div>
+        </div>
+        
+        {/* Teams Header */}
+        <div className="bg-tournament-pink text-white text-center py-3">
+          <h2 className="text-xl font-bold">TEAMS</h2>
+        </div>
+        
+        {/* Team List */}
+        <div>
+          {groupTeams.map((team) => {
+            const standing = groupStandings.find(s => s.teamId === team.id);
+            
+            return (
+              <div key={team.id} className="flex items-center bg-tournament-navy border-b border-tournament-navy/70">
+                {/* Position indicator */}
+                <div className="w-16 h-16 bg-tournament-pink flex items-center justify-center">
+                  <span className="text-xl font-bold text-white">
+                    {standing ? groupStandings.findIndex(s => s.teamId === team.id) + 1 : '-'}
+                  </span>
+                </div>
+                
+                {/* Team logo */}
+                <div className="w-24 h-24 p-2 flex items-center justify-center">
+                  <TeamLogo teamId={team.id} size="lg" className="border-4 border-white/10 rounded-full bg-white/10" />
+                </div>
+                
+                {/* Team name */}
+                <div className="flex-1 p-4">
+                  <h3 className="text-2xl font-bold text-white">{team.name}</h3>
+                </div>
+                
+                {/* Stats (optional, can be simplified for this design) */}
+                <div className="text-right p-4 text-white text-sm">
+                  {standing && (
+                    <div className="space-y-1">
+                      <div>PTS: <span className="font-bold">{standing.points}</span></div>
+                      <div>MP: <span className="font-bold">{standing.played}</span></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Decorative bottom elements */}
+        <div className="bg-tournament-darkNavy py-4 px-4 relative">
+          <div className="text-right text-tournament-accent/80 text-sm">
+            {organizer}
+          </div>
+          <div className="absolute bottom-0 right-0 w-40 h-1 bg-tournament-accent"></div>
+          <div className="absolute bottom-8 left-8 w-40 h-1 bg-tournament-pink"></div>
+        </div>
+      </div>
+      
+      {showControls && (
+        <div className="flex justify-end mt-4">
           <Button variant="outline" size="sm" onClick={downloadAsImage} className="flex items-center gap-1">
             <Download size={16} />
             <span>تحميل الترتيب</span>
           </Button>
-        )}
-      </div>
-      
-      <div id={`group-${group}-table`} className="rounded-md overflow-hidden bg-tournament-navy/80 p-2">
-        <div className="text-xl font-bold text-center text-white mb-2">ترتيب المجموعة {group}</div>
-        <Table>
-          <TableHeader className="bg-tournament-blue/50">
-            <TableRow>
-              <TableHead className="w-12 text-right">المركز</TableHead>
-              <TableHead className="text-right">الفريق</TableHead>
-              <TableHead className="text-center">لعب</TableHead>
-              <TableHead className="text-center">فوز</TableHead>
-              <TableHead className="text-center">تعادل</TableHead>
-              <TableHead className="text-center">خسارة</TableHead>
-              <TableHead className="text-center">له</TableHead>
-              <TableHead className="text-center">عليه</TableHead>
-              <TableHead className="text-center">+/-</TableHead>
-              <TableHead className="text-center">نقاط</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {groupStandings.map((standing, index) => {
-              const team = teams.find(t => t.id === standing.teamId);
-              const isQualified = index < 2;
-              
-              return (
-                <TableRow 
-                  key={standing.teamId}
-                  className={
-                    isQualified 
-                      ? "bg-tournament-blue/50 hover:bg-tournament-blue/70" 
-                      : "hover:bg-tournament-navy/50"
-                  }
-                >
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <TeamLogo teamId={standing.teamId} size="sm" />
-                      <span>{team?.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">{standing.played}</TableCell>
-                  <TableCell className="text-center">{standing.won}</TableCell>
-                  <TableCell className="text-center">{standing.drawn}</TableCell>
-                  <TableCell className="text-center">{standing.lost}</TableCell>
-                  <TableCell className="text-center">{standing.goalsFor}</TableCell>
-                  <TableCell className="text-center">{standing.goalsAgainst}</TableCell>
-                  <TableCell className="text-center">{standing.goalsFor - standing.goalsAgainst}</TableCell>
-                  <TableCell className="text-center font-bold">{standing.points}</TableCell>
-                </TableRow>
-              );
-            })}
-            
-            {/* إضافة صفوف فارغة إذا كان عدد الفرق أقل من 3 */}
-            {Array.from({ length: Math.max(0, 3 - groupStandings.length) }).map((_, index) => (
-              <TableRow key={`empty-${index}`}>
-                <TableCell>{groupStandings.length + index + 1}</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-                <TableCell className="text-center">0</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

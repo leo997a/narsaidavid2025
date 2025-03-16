@@ -59,6 +59,11 @@
     @apply bg-tournament-darkNavy text-foreground font-cairo;
   }
 
+  img {
+    /* Ensure images load properly by preventing CORS issues */
+    @apply object-contain;
+  }
+
   .bracket-line {
     @apply border-t-2 border-tournament-pink;
   }
@@ -97,8 +102,36 @@
   input, select, textarea {
     @apply dir-rtl;
   }
+  
+  /* Tournament-specific design elements */
+  .tournament-header {
+    @apply bg-tournament-darkNavy relative py-6;
+  }
+  
+  .tournament-header::before {
+    content: '';
+    @apply absolute top-0 left-0 w-12 h-1 bg-tournament-pink;
+  }
+  
+  .tournament-header::after {
+    content: '';
+    @apply absolute bottom-0 right-0 w-20 h-1 bg-tournament-accent;
+  }
+  
+  .team-row {
+    @apply border-b border-tournament-navy/30 hover:bg-tournament-navy/40 transition-colors;
+  }
+  
+  .team-row-qualified {
+    @apply bg-tournament-blue/30 border-b border-tournament-accent/30;
+  }
 }
 
 .dir-rtl {
   direction: rtl;
+}
+
+/* Fix for image display issues */
+img[src^="https://www2.0zz0.com"] {
+  @apply max-w-full max-h-full object-contain;
 }

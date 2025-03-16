@@ -32,7 +32,7 @@ const Groups = () => {
       const container = document.createElement('div');
       container.style.width = '1200px';
       container.style.padding = '20px';
-      container.style.backgroundColor = '#101935';
+      container.style.backgroundColor = '#0f1e45';
       container.style.display = 'flex';
       container.style.flexDirection = 'column';
       container.style.gap = '20px';
@@ -63,9 +63,9 @@ const Groups = () => {
           
           // Create a wrapper for each group
           const wrapper = document.createElement('div');
-          wrapper.style.backgroundColor = '#0f172a';
+          wrapper.style.backgroundColor = '#0f1e45';
           wrapper.style.borderRadius = '8px';
-          wrapper.style.padding = '10px';
+          wrapper.style.overflow = 'hidden';
           wrapper.appendChild(clone);
           
           grid.appendChild(wrapper);
@@ -82,13 +82,26 @@ const Groups = () => {
         container.appendChild(footer);
       }
       
+      // Add decorative elements
+      const decorElement1 = document.createElement('div');
+      decorElement1.style.position = 'absolute';
+      decorElement1.style.bottom = '20px';
+      decorElement1.style.right = '20px';
+      decorElement1.style.width = '100px';
+      decorElement1.style.height = '4px';
+      decorElement1.style.backgroundColor = '#ff4081';
+      container.appendChild(decorElement1);
+      
       // Temporarily add to document to render
       document.body.appendChild(container);
       
       // Generate image
       const canvas = await html2canvas(container, {
-        backgroundColor: '#101935',
-        scale: 1,
+        backgroundColor: '#0f1e45',
+        scale: 1.5,
+        logging: true,
+        useCORS: true,
+        allowTaint: true,
       });
       
       // Remove temporary container

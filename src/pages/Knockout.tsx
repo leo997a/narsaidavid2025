@@ -23,6 +23,8 @@ const Knockout = () => {
         const canvas = await html2canvas(element, { 
           backgroundColor: '#101935',
           scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
         });
         
         // Add tournament title and organizer
