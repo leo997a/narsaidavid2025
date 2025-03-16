@@ -1,6 +1,7 @@
 
 import { useTournamentStore } from "@/store/tournamentStore";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface TeamLogoProps {
   teamId: string | null;
@@ -11,6 +12,7 @@ interface TeamLogoProps {
 const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
   const getTeamById = useTournamentStore((state) => state.getTeamById);
   const team = teamId ? getTeamById(teamId) : undefined;
+  const [imageError, setImageError] = useState(false);
   
   const sizeClass = {
     sm: "w-8 h-8",
@@ -30,11 +32,11 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
     <div className={cn("flex items-center justify-center", className)}>
       <div className={cn("rounded-full overflow-hidden border-2 border-white/30 bg-tournament-navy flex items-center justify-center", sizeClass[size])}>
         <img
-          src={team.logo}
+          src={imageError ? "/placeholder.svg" : team.logo}
           alt={team.name}
           className="w-full h-full object-contain p-1"
           onError={(e) => {
-            e.currentTarget.src = "/placeholder.svg";
+            setImageError(true);
           }}
         />
       </div>

@@ -1,13 +1,15 @@
 
 import { useTournamentStore } from "@/store/tournamentStore";
 import TeamLogo from "./TeamLogo";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { KnockoutMatch } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Trophy } from "lucide-react";
+import { Trophy, Download } from "lucide-react";
+import html2canvas from "html2canvas";
+import { saveAs } from "file-saver";
 
 interface BracketTeamProps {
   teamId: string | null;
@@ -31,9 +33,10 @@ const BracketTeam = ({ teamId, isWinner, onClick }: BracketTeamProps) => {
 };
 
 const KnockoutBracket = () => {
-  const { knockoutMatches, updateKnockoutMatch } = useTournamentStore();
+  const { knockoutMatches, updateKnockoutMatch, tournamentName, organizer } = useTournamentStore();
   const [editingMatch, setEditingMatch] = useState<KnockoutMatch | null>(null);
   const [editedScores, setEditedScores] = useState({ teamAScore: 0, teamBScore: 0 });
+  const bracketRef = useRef<HTMLDivElement>(null);
 
   const quarterFinals = knockoutMatches.filter(m => m.stage === 'quarterfinal');
   const semiFinals = knockoutMatches.filter(m => m.stage === 'semifinal');
@@ -78,103 +81,137 @@ const KnockoutBracket = () => {
     toast.success("تم تحديث المباراة بنجاح");
   };
 
+  const handleDownloadBracket = async () => {
+    if (bracketRef.current) {
+      try {
+        toast.info("جاري تحضير الصورة...");
+        const canvas = await html2canvas(bracketRef.current, {
+          backgroundColor: "#0f172a", // خلفية داكنة
+          logging: false,
+          scale: 2, // لتحسين الدقة
+        });
+        
+        // تحويل الكانفاس إلى صورة
+        const image = canvas.toDataURL("image/png");
+        saveAs(image, `${tournamentName}-knockout-bracket.png`);
+        toast.success("تم تحميل المخطط بنجاح");
+      } catch (error) {
+        console.error("Error generating image:", error);
+        toast.error("حدث خطأ أثناء محاولة تحميل المخطط");
+      }
+    }
+  };
+
   return (
     <div className="relative my-8 py-10">
-      {/* الخطوط التقنية التزيينية */}
-      <div className="tech-dot top-0 left-4 animate-pulse-slow"></div>
-      <div className="tech-dot top-16 right-8 animate-pulse-slow"></div>
-      <div className="tech-dot bottom-8 left-1/3 animate-pulse-slow"></div>
-      <div className="tech-line"></div>
-
-      <div className="flex justify-center">
-        <div className="text-3xl font-bold text-white mb-8 text-center relative">
-          <span className="text-tournament-pink">بطولة </span>
-          <span className="relative">نرسي 2025</span>
-          <div className="absolute w-full h-0.5 bottom-0 left-0 bg-gradient-to-r from-transparent via-tournament-pink to-transparent"></div>
-        </div>
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" size="sm" onClick={handleDownloadBracket} className="flex items-center gap-2">
+          <Download size={16} />
+          <span>تحميل المخطط</span>
+        </Button>
       </div>
 
-      <div className="flex justify-center items-center">
-        <div className="flex flex-col items-center">
-          {/* مرحلة ربع النهائي - الجانب الأيسر */}
-          <div className="flex justify-between mx-4 gap-12">
-            <div className="flex flex-col gap-16">
-              <div className="relative">
-                <BracketTeam teamId={quarterFinals[0]?.teamAId} isWinner={quarterFinals[0]?.winner === quarterFinals[0]?.teamAId} onClick={() => handleEditMatch(quarterFinals[0])} />
-                <div className="h-8 bracket-line-vertical absolute right-0 top-full"></div>
-                <BracketTeam teamId={quarterFinals[0]?.teamBId} isWinner={quarterFinals[0]?.winner === quarterFinals[0]?.teamBId} onClick={() => handleEditMatch(quarterFinals[0])} />
-                <div className="w-8 bracket-line absolute left-full top-1/2"></div>
-              </div>
-              
-              <div className="relative">
-                <BracketTeam teamId={quarterFinals[1]?.teamAId} isWinner={quarterFinals[1]?.winner === quarterFinals[1]?.teamAId} onClick={() => handleEditMatch(quarterFinals[1])} />
-                <div className="h-8 bracket-line-vertical absolute right-0 top-full"></div>
-                <BracketTeam teamId={quarterFinals[1]?.teamBId} isWinner={quarterFinals[1]?.winner === quarterFinals[1]?.teamBId} onClick={() => handleEditMatch(quarterFinals[1])} />
-                <div className="w-8 bracket-line absolute left-full top-1/2"></div>
-              </div>
-            </div>
-            
-            {/* مرحلة نصف النهائي - الجانب الأيسر */}
-            <div className="relative mt-16">
-              <BracketTeam teamId={semiFinals[0]?.teamAId} isWinner={semiFinals[0]?.winner === semiFinals[0]?.teamAId} onClick={() => handleEditMatch(semiFinals[0])} />
-              <div className="h-12 bracket-line-vertical absolute right-0 top-full"></div>
-              <BracketTeam teamId={semiFinals[0]?.teamBId} isWinner={semiFinals[0]?.winner === semiFinals[0]?.teamBId} onClick={() => handleEditMatch(semiFinals[0])} />
-              <div className="w-8 bracket-line absolute left-full top-1/2"></div>
-            </div>
+      <div ref={bracketRef} className="p-8 rounded-lg relative">
+        {/* الخطوط التقنية التزيينية */}
+        <div className="tech-dot top-0 left-4 animate-pulse-slow"></div>
+        <div className="tech-dot top-16 right-8 animate-pulse-slow"></div>
+        <div className="tech-dot bottom-8 left-1/3 animate-pulse-slow"></div>
+        <div className="tech-line"></div>
+
+        <div className="flex justify-center">
+          <div className="text-3xl font-bold text-white mb-8 text-center relative">
+            <span className="text-tournament-pink">{tournamentName} </span>
+            <div className="absolute w-full h-0.5 bottom-0 left-0 bg-gradient-to-r from-transparent via-tournament-pink to-transparent"></div>
           </div>
         </div>
-        
-        {/* كأس النهائي */}
-        <div className="mx-8 flex flex-col items-center">
-          <Trophy className="w-12 h-12 text-tournament-pink mb-4" />
-          
-          {/* النهائي */}
-          <div className="relative mt-4 glassmorphism p-4 rounded-xl border border-tournament-pink/30">
-            <h3 className="text-tournament-pink text-center mb-2 font-bold">النهائي</h3>
-            <p className="text-xs text-center mb-4 text-gray-400">4/4/2025</p>
-            
-            <BracketTeam teamId={final?.teamAId} isWinner={final?.winner === final?.teamAId} onClick={() => handleEditMatch(final || undefined)} />
-            <div className="my-2 border-t border-dashed border-tournament-pink/30"></div>
-            <BracketTeam teamId={final?.teamBId} isWinner={final?.winner === final?.teamBId} onClick={() => handleEditMatch(final || undefined)} />
-            
-            {final?.winner && (
-              <div className="mt-4 text-center">
-                <div className="text-xs text-tournament-pink font-bold">الفائز</div>
-                <div className="flex justify-center mt-2">
-                  <TeamLogo teamId={final.winner} size="md" />
+
+        <div className="flex justify-center items-center">
+          <div className="flex flex-col items-center">
+            {/* مرحلة ربع النهائي - الجانب الأيسر */}
+            <div className="flex justify-between mx-4 gap-12">
+              <div className="flex flex-col gap-16">
+                <div className="relative">
+                  <BracketTeam teamId={quarterFinals[0]?.teamAId} isWinner={quarterFinals[0]?.winner === quarterFinals[0]?.teamAId} onClick={() => handleEditMatch(quarterFinals[0])} />
+                  <div className="h-8 bracket-line-vertical absolute right-0 top-full"></div>
+                  <BracketTeam teamId={quarterFinals[0]?.teamBId} isWinner={quarterFinals[0]?.winner === quarterFinals[0]?.teamBId} onClick={() => handleEditMatch(quarterFinals[0])} />
+                  <div className="w-8 bracket-line absolute left-full top-1/2"></div>
+                </div>
+                
+                <div className="relative">
+                  <BracketTeam teamId={quarterFinals[1]?.teamAId} isWinner={quarterFinals[1]?.winner === quarterFinals[1]?.teamAId} onClick={() => handleEditMatch(quarterFinals[1])} />
+                  <div className="h-8 bracket-line-vertical absolute right-0 top-full"></div>
+                  <BracketTeam teamId={quarterFinals[1]?.teamBId} isWinner={quarterFinals[1]?.winner === quarterFinals[1]?.teamBId} onClick={() => handleEditMatch(quarterFinals[1])} />
+                  <div className="w-8 bracket-line absolute left-full top-1/2"></div>
                 </div>
               </div>
-            )}
+              
+              {/* مرحلة نصف النهائي - الجانب الأيسر */}
+              <div className="relative mt-16">
+                <BracketTeam teamId={semiFinals[0]?.teamAId} isWinner={semiFinals[0]?.winner === semiFinals[0]?.teamAId} onClick={() => handleEditMatch(semiFinals[0])} />
+                <div className="h-12 bracket-line-vertical absolute right-0 top-full"></div>
+                <BracketTeam teamId={semiFinals[0]?.teamBId} isWinner={semiFinals[0]?.winner === semiFinals[0]?.teamBId} onClick={() => handleEditMatch(semiFinals[0])} />
+                <div className="w-8 bracket-line absolute left-full top-1/2"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* كأس النهائي */}
+          <div className="mx-8 flex flex-col items-center">
+            <Trophy className="w-12 h-12 text-tournament-pink mb-4" />
+            
+            {/* النهائي */}
+            <div className="relative mt-4 glassmorphism p-4 rounded-xl border border-tournament-pink/30">
+              <h3 className="text-tournament-pink text-center mb-2 font-bold">النهائي</h3>
+              <p className="text-xs text-center mb-4 text-gray-400">4/4/2025</p>
+              
+              <BracketTeam teamId={final?.teamAId} isWinner={final?.winner === final?.teamAId} onClick={() => handleEditMatch(final || undefined)} />
+              <div className="my-2 border-t border-dashed border-tournament-pink/30"></div>
+              <BracketTeam teamId={final?.teamBId} isWinner={final?.winner === final?.teamBId} onClick={() => handleEditMatch(final || undefined)} />
+              
+              {final?.winner && (
+                <div className="mt-4 text-center">
+                  <div className="text-xs text-tournament-pink font-bold">الفائز</div>
+                  <div className="flex justify-center mt-2">
+                    <TeamLogo teamId={final.winner} size="md" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            {/* مرحلة ربع النهائي - الجانب الأيمن */}
+            <div className="flex justify-between mx-4 gap-12">
+              {/* مرحلة نصف النهائي - الجانب الأيمن */}
+              <div className="relative mt-16">
+                <div className="w-8 bracket-line absolute right-full top-1/2"></div>
+                <BracketTeam teamId={semiFinals[1]?.teamAId} isWinner={semiFinals[1]?.winner === semiFinals[1]?.teamAId} onClick={() => handleEditMatch(semiFinals[1])} />
+                <div className="h-12 bracket-line-vertical absolute left-0 top-full"></div>
+                <BracketTeam teamId={semiFinals[1]?.teamBId} isWinner={semiFinals[1]?.winner === semiFinals[1]?.teamBId} onClick={() => handleEditMatch(semiFinals[1])} />
+              </div>
+              
+              <div className="flex flex-col gap-16">
+                <div className="relative">
+                  <div className="w-8 bracket-line absolute right-full top-1/2"></div>
+                  <BracketTeam teamId={quarterFinals[2]?.teamAId} isWinner={quarterFinals[2]?.winner === quarterFinals[2]?.teamAId} onClick={() => handleEditMatch(quarterFinals[2])} />
+                  <div className="h-8 bracket-line-vertical absolute left-0 top-full"></div>
+                  <BracketTeam teamId={quarterFinals[2]?.teamBId} isWinner={quarterFinals[2]?.winner === quarterFinals[2]?.teamBId} onClick={() => handleEditMatch(quarterFinals[2])} />
+                </div>
+                
+                <div className="relative">
+                  <div className="w-8 bracket-line absolute right-full top-1/2"></div>
+                  <BracketTeam teamId={quarterFinals[3]?.teamAId} isWinner={quarterFinals[3]?.winner === quarterFinals[3]?.teamAId} onClick={() => handleEditMatch(quarterFinals[3])} />
+                  <div className="h-8 bracket-line-vertical absolute left-0 top-full"></div>
+                  <BracketTeam teamId={quarterFinals[3]?.teamBId} isWinner={quarterFinals[3]?.winner === quarterFinals[3]?.teamBId} onClick={() => handleEditMatch(quarterFinals[3])} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="flex flex-col items-center">
-          {/* مرحلة ربع النهائي - الجانب الأيمن */}
-          <div className="flex justify-between mx-4 gap-12">
-            {/* مرحلة نصف النهائي - الجانب الأيمن */}
-            <div className="relative mt-16">
-              <div className="w-8 bracket-line absolute right-full top-1/2"></div>
-              <BracketTeam teamId={semiFinals[1]?.teamAId} isWinner={semiFinals[1]?.winner === semiFinals[1]?.teamAId} onClick={() => handleEditMatch(semiFinals[1])} />
-              <div className="h-12 bracket-line-vertical absolute left-0 top-full"></div>
-              <BracketTeam teamId={semiFinals[1]?.teamBId} isWinner={semiFinals[1]?.winner === semiFinals[1]?.teamBId} onClick={() => handleEditMatch(semiFinals[1])} />
-            </div>
-            
-            <div className="flex flex-col gap-16">
-              <div className="relative">
-                <div className="w-8 bracket-line absolute right-full top-1/2"></div>
-                <BracketTeam teamId={quarterFinals[2]?.teamAId} isWinner={quarterFinals[2]?.winner === quarterFinals[2]?.teamAId} onClick={() => handleEditMatch(quarterFinals[2])} />
-                <div className="h-8 bracket-line-vertical absolute left-0 top-full"></div>
-                <BracketTeam teamId={quarterFinals[2]?.teamBId} isWinner={quarterFinals[2]?.winner === quarterFinals[2]?.teamBId} onClick={() => handleEditMatch(quarterFinals[2])} />
-              </div>
-              
-              <div className="relative">
-                <div className="w-8 bracket-line absolute right-full top-1/2"></div>
-                <BracketTeam teamId={quarterFinals[3]?.teamAId} isWinner={quarterFinals[3]?.winner === quarterFinals[3]?.teamAId} onClick={() => handleEditMatch(quarterFinals[3])} />
-                <div className="h-8 bracket-line-vertical absolute left-0 top-full"></div>
-                <BracketTeam teamId={quarterFinals[3]?.teamBId} isWinner={quarterFinals[3]?.winner === quarterFinals[3]?.teamBId} onClick={() => handleEditMatch(quarterFinals[3])} />
-              </div>
-            </div>
-          </div>
+        {/* حقوق النشر للبطولة */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-gray-400">{organizer} © {new Date().getFullYear()}</p>
         </div>
       </div>
       

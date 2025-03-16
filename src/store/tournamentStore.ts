@@ -1,29 +1,28 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Team, Player, Match, GroupStanding, KnockoutMatch } from '../types';
 
-// البيانات الأولية للبطولة استنادًا إلى الصور المرفقة
+// البيانات الأولية للبطولة مع تحديث روابط الصور
 const initialTeams: Team[] = [
   // المجموعة A
-  { id: 'khoyada-a', name: 'KHOYADA A', logo: '/teams/khoyada-a.png', group: 'A' },
-  { id: 'barwar-b', name: 'BARWAR B', logo: '/teams/barwar-b.png', group: 'A' },
-  { id: 'hakkare', name: 'HAKKARE', logo: '/teams/hakkare.png', group: 'A' },
+  { id: 'khoyada-a', name: 'KHOYADA A', logo: 'https://www2.0zz0.com/2025/03/16/18/518716787.png', group: 'A' },
+  { id: 'barwar-b', name: 'BARWAR B', logo: 'https://www2.0zz0.com/2025/03/16/18/214508191.jpg', group: 'A' },
+  { id: 'hakkare', name: 'HAKKARE', logo: 'https://www2.0zz0.com/2025/03/16/18/177671746.png', group: 'A' },
   
   // المجموعة B
-  { id: 'barwar-a', name: 'BARWAR A', logo: '/teams/barwar-a.png', group: 'B' },
-  { id: 'nergal', name: 'NERGAL', logo: '/teams/nergal.png', group: 'B' },
-  { id: 'mangesh', name: 'MANGESH', logo: '/teams/mangesh.png', group: 'B' },
+  { id: 'barwar-a', name: 'BARWAR A', logo: 'https://www2.0zz0.com/2025/03/16/18/322348416.jpg', group: 'B' },
+  { id: 'nergal', name: 'NERGAL', logo: 'https://www2.0zz0.com/2025/03/16/18/844566857.png', group: 'B' },
+  { id: 'mangesh', name: 'MANGESH', logo: 'https://www2.0zz0.com/2025/03/16/18/314810508.png', group: 'B' },
   
   // المجموعة C
-  { id: 'rafiden', name: 'RAFIDEN', logo: '/teams/rafiden.png', group: 'C' },
-  { id: 'gaznakh', name: 'GAZNAKH', logo: '/teams/gaznakh.png', group: 'C' },
-  { id: 'batnaye', name: 'BATNAYE', logo: '/teams/batnaye.png', group: 'C' },
+  { id: 'rafiden', name: 'RAFIDEN', logo: 'https://www2.0zz0.com/2025/03/16/18/729221934.png', group: 'C' },
+  { id: 'gaznakh', name: 'GAZNAKH', logo: 'https://www2.0zz0.com/2025/03/16/18/125590941.png', group: 'C' },
+  { id: 'batnaye', name: 'BATNAYE', logo: 'https://www2.0zz0.com/2025/03/16/18/212549849.png', group: 'C' },
   
   // المجموعة D
-  { id: 'nala', name: 'NALA', logo: '/teams/nala.png', group: 'D' },
-  { id: 'karanjo', name: 'KARANJO', logo: '/teams/karanjo.png', group: 'D' },
-  { id: 'khoyada-b', name: 'KHOYADA B', logo: '/teams/khoyada-b.png', group: 'D' },
+  { id: 'nala', name: 'NALA', logo: 'https://www2.0zz0.com/2025/03/16/18/840537525.png', group: 'D' },
+  { id: 'karanjo', name: 'KARANJO', logo: 'https://www2.0zz0.com/2025/03/16/18/840544347.png', group: 'D' },
+  { id: 'khoyada-b', name: 'KHOYADA B', logo: 'https://www2.0zz0.com/2025/03/16/18/281866893.png', group: 'D' },
 ];
 
 // البيانات الأولية للمباريات استنادًا إلى الصور المرفقة
@@ -237,6 +236,8 @@ type TournamentStore = {
   matches: Match[];
   knockoutMatches: KnockoutMatch[];
   standings: Record<string, GroupStanding[]>;
+  tournamentName: string;
+  organizer: string;
   
   // وظائف إدارة البيانات
   addPlayer: (player: Player) => void;
@@ -245,6 +246,7 @@ type TournamentStore = {
   updateKnockoutMatch: (match: KnockoutMatch) => void;
   calculateStandings: () => void;
   setQualifiedTeams: () => void;
+  updateTournamentInfo: (name: string, organizer: string) => void;
   
   // وظائف مساعدة
   getTeamById: (id: string) => Team | undefined;
@@ -265,6 +267,8 @@ export const useTournamentStore = create<TournamentStore>()(
         C: [] as GroupStanding[],
         D: [] as GroupStanding[],
       },
+      tournamentName: 'نرسي 2025',
+      organizer: 'لجنة المسابقات',
       
       addPlayer: (player) => {
         set((state) => ({
@@ -457,6 +461,10 @@ export const useTournamentStore = create<TournamentStore>()(
         }
       },
       
+      updateTournamentInfo: (name: string, organizer: string) => {
+        set({ tournamentName: name, organizer: organizer });
+      },
+      
       getTeamById: (id) => {
         return get().teams.find(team => team.id === id);
       },
@@ -476,3 +484,4 @@ export const useTournamentStore = create<TournamentStore>()(
     }
   )
 );
+

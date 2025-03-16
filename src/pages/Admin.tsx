@@ -10,6 +10,16 @@ import TeamLogo from "@/components/TeamLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const Admin = () => {
   const { 
@@ -19,10 +29,16 @@ const Admin = () => {
     setQualifiedTeams,
     getTeamById,
     knockoutMatches,
-    updateKnockoutMatch
+    updateKnockoutMatch,
+    tournamentName,
+    organizer,
+    updateTournamentInfo
   } = useTournamentStore();
   
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [newTournamentName, setNewTournamentName] = useState(tournamentName);
+  const [newOrganizer, setNewOrganizer] = useState(organizer);
   
   // تصفية المباريات حسب حالتها
   const upcomingMatches = matches.filter(match => match.status === 'upcoming');
@@ -45,18 +61,83 @@ const Admin = () => {
     setQualifiedTeams();
   };
 
+  const handleSaveTournamentInfo = () => {
+    updateTournamentInfo(newTournamentName, newOrganizer);
+    setEditingInfo(false);
+    toast.success("تم تحديث معلومات البطولة بنجاح");
+  };
+
   return (
     <Layout>
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
       </div>
 
-      <Tabs defaultValue="matches" className="space-y-6">
-        <TabsList className="grid grid-cols-3 mb-4">
+      <Tabs defaultValue="tournament" className="space-y-6">
+        <TabsList className="grid grid-cols-4 mb-4">
+          <TabsTrigger value="tournament">معلومات البطولة</TabsTrigger>
           <TabsTrigger value="matches">المباريات</TabsTrigger>
           <TabsTrigger value="teams">الفرق واللاعبين</TabsTrigger>
           <TabsTrigger value="knockout">الأدوار الإقصائية</TabsTrigger>
         </TabsList>
+        
+        {/* قسم معلومات البطولة */}
+        <TabsContent value="tournament" className="space-y-6">
+          <div className="glassmorphism p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-6">معلومات البطولة</h2>
+            
+            {editingInfo ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <Label>اسم البطولة</Label>
+                    <Input 
+                      value={newTournamentName} 
+                      onChange={(e) => setNewTournamentName(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>اسم المنظم / اللجنة</Label>
+                    <Input 
+                      value={newOrganizer} 
+                      onChange={(e) => setNewOrganizer(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button variant="outline" onClick={() => setEditingInfo(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={handleSaveTournamentInfo}>
+                    حفظ المعلومات
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-tournament-navy rounded-lg">
+                    <Label className="text-sm text-gray-400">اسم البطولة</Label>
+                    <p className="text-lg font-semibold">{tournamentName}</p>
+                  </div>
+                  <div className="p-4 bg-tournament-navy rounded-lg">
+                    <Label className="text-sm text-gray-400">اسم المنظم / اللجنة</Label>
+                    <p className="text-lg font-semibold">{organizer}</p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button onClick={() => setEditingInfo(true)}>
+                    تعديل المعلومات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </TabsContent>
         
         {/* قسم المباريات */}
         <TabsContent value="matches" className="space-y-6">
