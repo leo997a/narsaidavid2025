@@ -35,9 +35,7 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
           src={imageError ? "/placeholder.svg" : team.logo}
           alt={team.name}
           className="w-full h-full object-contain p-1"
-          onError={(e) => {
-            setImageError(true);
-          }}
+          onError={() => setImageError(true)}
         />
       </div>
     </div>
