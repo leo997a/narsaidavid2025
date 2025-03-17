@@ -65,9 +65,8 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
                 )}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
-                loading="eager"
-                decoding="async"
-                referrerPolicy="no-referrer"
+                loading="lazy"
+                crossOrigin="anonymous"
                 style={{ maxWidth: '100%', maxHeight: '100%' }}
               />
             ) : (

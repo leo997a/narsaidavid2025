@@ -3,16 +3,14 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useTournamentStore } from "@/store/tournamentStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Team, Match, Player } from "@/types";
-import PlayerStats from "@/components/PlayerStats";
-import MatchCard from "@/components/MatchCard";
 import TeamLogo from "@/components/TeamLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Upload, ImageIcon } from "lucide-react";
 import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -20,6 +18,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import PlayerStats from "@/components/PlayerStats";
+import MatchCard from "@/components/MatchCard";
 
 const Admin = () => {
   const { 
@@ -32,13 +32,18 @@ const Admin = () => {
     updateKnockoutMatch,
     tournamentName,
     organizer,
-    updateTournamentInfo
+    copyright,
+    updateTournamentInfo,
+    updateTeam
   } = useTournamentStore();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [editingInfo, setEditingInfo] = useState(false);
   const [newTournamentName, setNewTournamentName] = useState(tournamentName);
   const [newOrganizer, setNewOrganizer] = useState(organizer);
+  const [newCopyright, setNewCopyright] = useState(copyright || "");
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [newTeamLogo, setNewTeamLogo] = useState("");
   
   // تصفية المباريات حسب حالتها
   const upcomingMatches = matches.filter(match => match.status === 'upcoming');
@@ -55,16 +60,41 @@ const Admin = () => {
   
   const handleRefreshStandings = () => {
     calculateStandings();
+    toast.success("تم تحديث ترتيب المجموعات بنجاح");
   };
   
   const handleQualifyTeams = () => {
     setQualifiedTeams();
+    toast.success("تم تأهيل الفرق للأدوار الإقصائية بنجاح");
   };
 
   const handleSaveTournamentInfo = () => {
-    updateTournamentInfo(newTournamentName, newOrganizer);
+    updateTournamentInfo(newTournamentName, newOrganizer, newCopyright);
     setEditingInfo(false);
     toast.success("تم تحديث معلومات البطولة بنجاح");
+  };
+
+  const handleEditTeamLogo = (teamId: string) => {
+    setEditingTeamId(teamId);
+    const team = getTeamById(teamId);
+    if (team) {
+      setNewTeamLogo(team.logo || "");
+    }
+  };
+
+  const handleSaveTeamLogo = () => {
+    if (editingTeamId) {
+      const team = getTeamById(editingTeamId);
+      if (team) {
+        updateTeam({
+          ...team,
+          logo: newTeamLogo
+        });
+        toast.success(`تم تحديث شعار ${team.name} بنجاح`);
+        setEditingTeamId(null);
+        setNewTeamLogo("");
+      }
+    }
   };
 
   return (
@@ -105,6 +135,15 @@ const Admin = () => {
                       className="mt-1"
                     />
                   </div>
+                  <div>
+                    <Label>نص حقوق الطبع والنشر</Label>
+                    <Input 
+                      value={newCopyright} 
+                      onChange={(e) => setNewCopyright(e.target.value)}
+                      className="mt-1"
+                      placeholder="مثال: © 2025 جميع الحقوق محفوظة"
+                    />
+                  </div>
                 </div>
                 
                 <div className="flex justify-end gap-2 mt-4">
@@ -126,6 +165,10 @@ const Admin = () => {
                   <div className="p-4 bg-tournament-navy rounded-lg">
                     <Label className="text-sm text-gray-400">اسم المنظم / اللجنة</Label>
                     <p className="text-lg font-semibold">{organizer}</p>
+                  </div>
+                  <div className="p-4 bg-tournament-navy rounded-lg col-span-2">
+                    <Label className="text-sm text-gray-400">نص حقوق الطبع والنشر</Label>
+                    <p className="text-lg font-semibold">{copyright || "© 2025 جميع الحقوق محفوظة"}</p>
                   </div>
                 </div>
                 
@@ -179,15 +222,72 @@ const Admin = () => {
             <Button onClick={handleQualifyTeams}>تأهيل الفرق للأدوار الإقصائية</Button>
           </div>
           
+          {editingTeamId && (
+            <div className="glassmorphism p-4 rounded-lg mb-4">
+              <h3 className="text-lg font-semibold mb-4">
+                تعديل شعار {getTeamById(editingTeamId)?.name}
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex gap-4 items-center">
+                  <div>
+                    <TeamLogo teamId={editingTeamId} size="lg" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <Label htmlFor="logo-url" className="mb-2 block">رابط شعار الفريق</Label>
+                    <Input
+                      id="logo-url"
+                      value={newTeamLogo}
+                      onChange={(e) => setNewTeamLogo(e.target.value)}
+                      placeholder="أدخل رابط URL للشعار..."
+                      className="mb-2"
+                    />
+                    <p className="text-xs text-gray-400">
+                      أدخل رابط URL كامل للصورة. مثال: https://example.com/logo.png
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setEditingTeamId(null);
+                      setNewTeamLogo("");
+                    }}
+                  >
+                    إلغاء
+                  </Button>
+                  <Button onClick={handleSaveTeamLogo}>
+                    حفظ الشعار
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {teams.map(team => (
               <div key={team.id} className="glassmorphism p-4 rounded-lg">
-                <div className="mb-4 flex items-center gap-2">
-                  <TeamLogo teamId={team.id} />
-                  <h3 className="text-lg font-semibold">{team.name}</h3>
-                  <span className="bg-tournament-accent/20 text-tournament-accent px-2 py-0.5 rounded text-xs">
-                    المجموعة {team.group}
-                  </span>
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TeamLogo teamId={team.id} />
+                    <h3 className="text-lg font-semibold">{team.name}</h3>
+                    <span className="bg-tournament-accent/20 text-tournament-accent px-2 py-0.5 rounded text-xs">
+                      المجموعة {team.group}
+                    </span>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleEditTeamLogo(team.id)}
+                    className="flex items-center gap-1"
+                  >
+                    <ImageIcon size={16} />
+                    <span>تعديل الشعار</span>
+                  </Button>
                 </div>
                 <PlayerStats teamId={team.id} />
               </div>

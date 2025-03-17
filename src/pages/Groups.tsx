@@ -10,7 +10,7 @@ import { saveAs } from "file-saver";
 import { Download } from "lucide-react";
 
 const Groups = () => {
-  const { calculateStandings, setQualifiedTeams, tournamentName, organizer, getCopyrightInfo } = useTournamentStore();
+  const { calculateStandings, setQualifiedTeams, tournamentName, organizer, copyright, getCopyrightInfo } = useTournamentStore();
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   
   useEffect(() => {
@@ -89,13 +89,14 @@ const Groups = () => {
       await Promise.all(groupPromises);
       
       // Add copyright
-      const copyright = document.createElement('div');
-      copyright.innerText = getCopyrightInfo();
-      copyright.style.color = 'white';
-      copyright.style.textAlign = 'center';
-      copyright.style.marginTop = '20px';
-      copyright.style.fontSize = '18px';
-      container.appendChild(copyright);
+      const copyrightText = copyright || getCopyrightInfo();
+      const copyrightElement = document.createElement('div');
+      copyrightElement.innerText = copyrightText;
+      copyrightElement.style.color = 'white';
+      copyrightElement.style.textAlign = 'center';
+      copyrightElement.style.marginTop = '20px';
+      copyrightElement.style.fontSize = '18px';
+      container.appendChild(copyrightElement);
       
       // Add decorative elements
       const decorElement1 = document.createElement('div');
@@ -165,7 +166,7 @@ const Groups = () => {
       </div>
       
       <div className="text-center text-sm text-gray-400 py-4">
-        {getCopyrightInfo()}
+        {copyright || getCopyrightInfo()}
       </div>
     </Layout>
   );

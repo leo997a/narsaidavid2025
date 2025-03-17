@@ -14,14 +14,31 @@ interface GroupTableProps {
 }
 
 const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
-  const { teams, standings, tournamentName, organizer, getCopyrightInfo } = useTournamentStore();
+  const { teams, standings, tournamentName, organizer, copyright, getCopyrightInfo } = useTournamentStore();
   
   const groupTeams = useMemo(() => {
     return teams.filter(team => team.group === group);
   }, [teams, group]);
   
   const groupStandings = useMemo(() => {
-    return standings[group] || [];
+    // Ensure standings are sorted by points first, then goal difference
+    const standsForGroup = standings[group] || [];
+    return [...standsForGroup].sort((a, b) => {
+      // Sort by points (descending)
+      if (a.points !== b.points) {
+        return b.points - a.points;
+      }
+      
+      // If points are equal, sort by goal difference (descending)
+      const aGD = a.goalsFor - a.goalsAgainst;
+      const bGD = b.goalsFor - b.goalsAgainst;
+      if (aGD !== bGD) {
+        return bGD - aGD;
+      }
+      
+      // If goal difference is equal, sort by goals scored (descending)
+      return b.goalsFor - a.goalsFor;
+    });
   }, [standings, group]);
 
   const downloadAsImage = () => {
@@ -81,16 +98,16 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         
         {/* Team List */}
         <div>
-          {groupTeams.map((team) => {
-            const standing = groupStandings.find(s => s.teamId === team.id);
-            const position = standing ? groupStandings.findIndex(s => s.teamId === team.id) + 1 : '-';
+          {groupStandings.map((standing, index) => {
+            const team = teams.find(t => t.id === standing.teamId);
+            if (!team) return null;
             
             return (
               <div key={team.id} className="flex items-center bg-tournament-navy border-b border-tournament-navy/70">
                 {/* Position indicator */}
                 <div className="w-16 h-16 bg-tournament-pink flex items-center justify-center">
                   <span className="text-xl font-bold text-white">
-                    {position}
+                    {index + 1}
                   </span>
                 </div>
                 
@@ -106,15 +123,13 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
                 
                 {/* Stats */}
                 <div className="text-right p-4 text-white text-sm">
-                  {standing && (
-                    <div className="space-y-1">
-                      <div>PTS: <span className="font-bold text-lg">{standing.points}</span></div>
-                      <div>MP: <span className="font-bold">{standing.played}</span></div>
-                      <div>W/D/L: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
-                      <div>GF/GA: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
-                      <div>GD: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <div>PTS: <span className="font-bold text-lg">{standing.points}</span></div>
+                    <div>MP: <span className="font-bold">{standing.played}</span></div>
+                    <div>W/D/L: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
+                    <div>GF/GA: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
+                    <div>GD: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
+                  </div>
                 </div>
               </div>
             );
@@ -168,7 +183,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         {/* Copyright and Decorative bottom elements */}
         <div className="bg-tournament-darkNavy py-4 px-4 relative">
           <div className="text-right text-tournament-accent/80 text-sm">
-            {getCopyrightInfo()}
+            {copyright || getCopyrightInfo()}
           </div>
           <div className="absolute bottom-0 right-0 w-40 h-1 bg-tournament-accent"></div>
           <div className="absolute bottom-8 left-8 w-40 h-1 bg-tournament-pink"></div>
