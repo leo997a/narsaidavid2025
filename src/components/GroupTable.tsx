@@ -100,12 +100,15 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
                   <h3 className="text-2xl font-bold text-white">{team.name}</h3>
                 </div>
                 
-                {/* Stats (optional, can be simplified for this design) */}
+                {/* Stats */}
                 <div className="text-right p-4 text-white text-sm">
                   {standing && (
                     <div className="space-y-1">
-                      <div>PTS: <span className="font-bold">{standing.points}</span></div>
+                      <div>PTS: <span className="font-bold text-lg">{standing.points}</span></div>
                       <div>MP: <span className="font-bold">{standing.played}</span></div>
+                      <div>W/D/L: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
+                      <div>GF/GA: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
+                      <div>GD: <span className="font-bold">{standing.goalsFor - standing.goalsAgainst}</span></div>
                     </div>
                   )}
                 </div>

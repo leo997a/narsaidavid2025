@@ -46,9 +46,6 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
     setImageLoaded(false);
   };
 
-  // Use secure HTTPS URLs to avoid mixed content errors
-  const secureLogoUrl = team.logo?.replace('http://', 'https://');
-
   return (
     <div className={cn("flex items-center justify-center", className)}>
       <div className={cn("rounded-full overflow-hidden border-2 border-white/30 bg-tournament-navy flex items-center justify-center", sizeClass[size])}>
@@ -58,7 +55,7 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
           </div>
         ) : (
           <img
-            src={secureLogoUrl || "/placeholder.svg"}
+            src={team.logo || "/placeholder.svg"}
             alt={team.name}
             className={cn(
               "w-full h-full object-contain p-1",
@@ -66,7 +63,8 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
             )}
             onLoad={handleImageLoad}
             onError={handleImageError}
-            crossOrigin="anonymous"
+            loading="lazy"
+            referrerPolicy="no-referrer"
           />
         )}
         {!imageLoaded && !imageError && (
