@@ -18,6 +18,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
+      locale="en-US" // استخدام اللغة الإنجليزية للتاريخ الميلادي
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -58,9 +59,14 @@ function Calendar({
       }}
       formatters={{
         formatWeekdayName: (weekday) => {
-          // Use English weekday names
+          // استخدام أسماء أيام الأسبوع باللغة الإنجليزية
           const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
           return weekdays[weekday.getDay()];
+        },
+        // تنسيق الشهر والسنة بالميلادي
+        formatMonthCaption: (date) => {
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+          return `${months[date.getMonth()]} ${date.getFullYear()}`;
         },
       }}
       {...props}

@@ -5,8 +5,11 @@ import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
-    // If this is a date input, ensure it uses Gregorian calendar
-    const dateProps = type === "date" ? { lang: "en" } : {};
+    // يجبر استخدام التقويم الميلادي والتنسيق المطلوب
+    const dateProps = type === "date" ? { 
+      lang: "en", 
+      format: "DD/MM/YYYY"
+    } : {};
     
     return (
       <input

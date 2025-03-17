@@ -4,7 +4,6 @@ import Layout from '@/components/Layout';
 import MatchCard from '@/components/MatchCard';
 import { useTournamentStore } from '@/store/tournamentStore';
 import { format, parseISO } from 'date-fns';
-import { ar } from 'date-fns/locale';
 
 const Matches = () => {
   const { matches, tournamentName } = useTournamentStore();
@@ -26,7 +25,8 @@ const Matches = () => {
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
-      return format(date, 'MMMM d, yyyy', { locale: ar });
+      // تغيير تنسيق التاريخ إلى الشكل المطلوب: DD/MM/YYYY
+      return format(date, 'dd/MM/yyyy');
     } catch (error) {
       return dateString;
     }

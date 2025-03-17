@@ -83,7 +83,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
       <div id={`group-${group}-table`} className="rounded-md overflow-hidden">
         {/* Group Header - Styled like reference image */}
         <div className="bg-tournament-darkNavy py-6 px-4 relative">
-          <h1 className="text-6xl font-bold text-white text-center">GROUP {group}</h1>
+          <h1 className="text-6xl font-bold text-white text-center">المجموعة {group}</h1>
           
           {/* Decorative elements from the reference design */}
           <div className="absolute top-[40%] left-0 w-32 h-1 bg-tournament-pink"></div>
@@ -93,7 +93,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         
         {/* Teams Header */}
         <div className="bg-tournament-pink text-white text-center py-3">
-          <h2 className="text-xl font-bold">TEAMS</h2>
+          <h2 className="text-xl font-bold">الفرق</h2>
         </div>
         
         {/* Team List */}
@@ -124,11 +124,11 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
                 {/* Stats */}
                 <div className="text-right p-4 text-white text-sm">
                   <div className="space-y-1">
-                    <div>PTS: <span className="font-bold text-lg">{standing.points}</span></div>
-                    <div>MP: <span className="font-bold">{standing.played}</span></div>
-                    <div>W/D/L: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
-                    <div>GF/GA: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
-                    <div>GD: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
+                    <div>النقاط: <span className="font-bold text-lg">{standing.points}</span></div>
+                    <div>عدد المباريات: <span className="font-bold">{standing.played}</span></div>
+                    <div>ف/ت/خ: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
+                    <div>له/عليه: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
+                    <div>فارق الأهداف: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
                   </div>
                 </div>
               </div>
@@ -141,16 +141,16 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
           <Table className="w-full rounded-md overflow-hidden">
             <TableHeader className="bg-tournament-pink text-white">
               <TableRow>
-                <TableHead className="text-center text-white">Pos.</TableHead>
-                <TableHead className="text-white">Team</TableHead>
-                <TableHead className="text-center text-white">MP</TableHead>
-                <TableHead className="text-center text-white">W</TableHead>
-                <TableHead className="text-center text-white">D</TableHead>
-                <TableHead className="text-center text-white">L</TableHead>
-                <TableHead className="text-center text-white">GF</TableHead>
-                <TableHead className="text-center text-white">GA</TableHead>
-                <TableHead className="text-center text-white">GD</TableHead>
-                <TableHead className="text-center text-white">PTS</TableHead>
+                <TableHead className="text-center text-white">المركز</TableHead>
+                <TableHead className="text-white">الفريق</TableHead>
+                <TableHead className="text-center text-white">مباريات</TableHead>
+                <TableHead className="text-center text-white">فوز</TableHead>
+                <TableHead className="text-center text-white">تعادل</TableHead>
+                <TableHead className="text-center text-white">خسارة</TableHead>
+                <TableHead className="text-center text-white">له</TableHead>
+                <TableHead className="text-center text-white">عليه</TableHead>
+                <TableHead className="text-center text-white">+/-</TableHead>
+                <TableHead className="text-center text-white">نقاط</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
