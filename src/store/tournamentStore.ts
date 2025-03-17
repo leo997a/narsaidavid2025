@@ -238,6 +238,7 @@ type TournamentStore = {
   standings: Record<string, GroupStanding[]>;
   tournamentName: string;
   organizer: string;
+  copyright: string | null;
   
   // وظائف إدارة البيانات
   addPlayer: (player: Player) => void;
@@ -246,7 +247,8 @@ type TournamentStore = {
   updateKnockoutMatch: (match: KnockoutMatch) => void;
   calculateStandings: () => void;
   setQualifiedTeams: () => void;
-  updateTournamentInfo: (name: string, organizer: string) => void;
+  updateTournamentInfo: (name: string, organizer: string, copyright: string) => void;
+  updateTeam: (team: Team) => void;
   
   // وظائف مساعدة
   getTeamById: (id: string) => Team | undefined;
@@ -270,6 +272,7 @@ export const useTournamentStore = create<TournamentStore>()(
       },
       tournamentName: 'نرسي 2025',
       organizer: 'لجنة المسابقات',
+      copyright: null,
       
       addPlayer: (player) => {
         set((state) => ({
@@ -503,8 +506,16 @@ export const useTournamentStore = create<TournamentStore>()(
         }
       },
       
-      updateTournamentInfo: (name: string, organizer: string) => {
-        set({ tournamentName: name, organizer: organizer });
+      updateTournamentInfo: (name: string, organizer: string, copyright: string) => {
+        set({ tournamentName: name, organizer: organizer, copyright: copyright });
+      },
+      
+      updateTeam: (updatedTeam: Team) => {
+        set((state) => ({
+          teams: state.teams.map(team => 
+            team.id === updatedTeam.id ? updatedTeam : team
+          )
+        }));
       },
       
       getTeamById: (id) => {
