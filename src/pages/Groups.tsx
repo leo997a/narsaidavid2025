@@ -10,7 +10,7 @@ import { saveAs } from "file-saver";
 import { Download } from "lucide-react";
 
 const Groups = () => {
-  const { calculateStandings, setQualifiedTeams, tournamentName, organizer } = useTournamentStore();
+  const { calculateStandings, setQualifiedTeams, tournamentName, organizer, getCopyrightInfo } = useTournamentStore();
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   
   useEffect(() => {
@@ -30,65 +30,80 @@ const Groups = () => {
     try {
       // Create a container for all groups
       const container = document.createElement('div');
-      container.style.width = '1200px';
-      container.style.padding = '20px';
+      container.style.width = '1600px';
+      container.style.padding = '40px';
       container.style.backgroundColor = '#0f1e45';
       container.style.display = 'flex';
       container.style.flexDirection = 'column';
-      container.style.gap = '20px';
+      container.style.gap = '40px';
       
       // Add title
       const title = document.createElement('h1');
       title.innerText = `ترتيب المجموعات - ${tournamentName}`;
       title.style.color = 'white';
       title.style.textAlign = 'center';
-      title.style.margin = '10px 0';
+      title.style.margin = '20px 0';
       title.style.fontWeight = 'bold';
-      title.style.fontSize = '32px';
+      title.style.fontSize = '48px';
       container.appendChild(title);
       
       // Create a grid for groups
       const grid = document.createElement('div');
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-      grid.style.gap = '20px';
+      grid.style.gap = '40px';
       container.appendChild(grid);
 
       // Get all group tables
       const groups = ['A', 'B', 'C', 'D'];
+      const groupPromises = [];
+      
       for (const group of groups) {
         const groupElement = document.getElementById(`group-${group}-table`);
         if (groupElement) {
-          const clone = groupElement.cloneNode(true) as HTMLElement;
+          const promise = html2canvas(groupElement, {
+            backgroundColor: '#0f1e45',
+            scale: 1.5,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+          }).then(canvas => {
+            // Create wrapper for each group
+            const wrapper = document.createElement('div');
+            wrapper.style.borderRadius = '12px';
+            wrapper.style.overflow = 'hidden';
+            wrapper.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.3)';
+            
+            // Append canvas to wrapper
+            wrapper.appendChild(canvas);
+            grid.appendChild(wrapper);
+            
+            return wrapper;
+          });
           
-          // Create a wrapper for each group
-          const wrapper = document.createElement('div');
-          wrapper.style.backgroundColor = '#0f1e45';
-          wrapper.style.borderRadius = '8px';
-          wrapper.style.overflow = 'hidden';
-          wrapper.appendChild(clone);
-          
-          grid.appendChild(wrapper);
+          groupPromises.push(promise);
         }
       }
       
-      // Add organizer footer
-      if (organizer) {
-        const footer = document.createElement('div');
-        footer.innerText = organizer;
-        footer.style.color = 'white';
-        footer.style.textAlign = 'center';
-        footer.style.marginTop = '10px';
-        container.appendChild(footer);
-      }
+      // Wait for all canvases to be created
+      await Promise.all(groupPromises);
+      
+      // Add copyright
+      const copyright = document.createElement('div');
+      copyright.innerText = getCopyrightInfo();
+      copyright.style.color = 'white';
+      copyright.style.textAlign = 'center';
+      copyright.style.marginTop = '20px';
+      copyright.style.fontSize = '18px';
+      container.appendChild(copyright);
       
       // Add decorative elements
       const decorElement1 = document.createElement('div');
       decorElement1.style.position = 'absolute';
-      decorElement1.style.bottom = '20px';
-      decorElement1.style.right = '20px';
-      decorElement1.style.width = '100px';
-      decorElement1.style.height = '4px';
+      decorElement1.style.bottom = '40px';
+      decorElement1.style.right = '40px';
+      decorElement1.style.width = '160px';
+      decorElement1.style.height = '6px';
       decorElement1.style.backgroundColor = '#ff4081';
       container.appendChild(decorElement1);
       
@@ -98,8 +113,8 @@ const Groups = () => {
       // Generate image
       const canvas = await html2canvas(container, {
         backgroundColor: '#0f1e45',
-        scale: 1.5,
-        logging: true,
+        scale: 1,
+        logging: false,
         useCORS: true,
         allowTaint: true,
       });
@@ -125,18 +140,18 @@ const Groups = () => {
   return (
     <Layout>
       <div className="mb-6 flex flex-wrap gap-2 justify-between items-center">
-        <h1 className="text-2xl font-bold">المجموعات</h1>
+        <h1 className="text-2xl font-bold">ترتيب المجموعات</h1>
         <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline"
             onClick={downloadAllGroups}
             disabled={isGeneratingImage}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 bg-tournament-accent text-white hover:bg-tournament-accent/90"
           >
             <Download size={16} />
             <span>تحميل جميع المجموعات</span>
           </Button>
-          <Button onClick={handleQualifyTeams}>
+          <Button onClick={handleQualifyTeams} className="bg-tournament-pink hover:bg-tournament-pink/90">
             تأهيل الفرق للأدوار الإقصائية
           </Button>
         </div>
@@ -147,6 +162,10 @@ const Groups = () => {
         <GroupTable group="B" />
         <GroupTable group="C" />
         <GroupTable group="D" />
+      </div>
+      
+      <div className="text-center text-sm text-gray-400 py-4">
+        {getCopyrightInfo()}
       </div>
     </Layout>
   );

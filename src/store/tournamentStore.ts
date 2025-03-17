@@ -252,6 +252,7 @@ type TournamentStore = {
   getTeamById: (id: string) => Team | undefined;
   getPlayersByTeam: (teamId: string) => Player[];
   getTopScorers: (limit?: number) => Player[];
+  getCopyrightInfo: () => string;
 };
 
 export const useTournamentStore = create<TournamentStore>()(
@@ -401,14 +402,55 @@ export const useTournamentStore = create<TournamentStore>()(
         // ترتيب الفرق حسب النقاط ثم فارق الأهداف ثم الأهداف المسجلة
         Object.keys(newStandings).forEach(group => {
           newStandings[group].sort((a, b) => {
+            // أولاً: ترتيب حسب النقاط
             if (b.points !== a.points) {
               return b.points - a.points;
             }
+            
+            // ثانياً: نتائج المواجهات المباشرة (تنفيذ بسيط)
+            // هذا تنفيذ مبسط، للمواجهات المباشرة نحتاج معرفة من فاز على من
+            const directMatchesA = completedMatches.filter(m => 
+              (m.homeTeamId === a.teamId && m.awayTeamId === b.teamId) || 
+              (m.homeTeamId === b.teamId && m.awayTeamId === a.teamId)
+            );
+            
+            let aDirectPoints = 0;
+            let bDirectPoints = 0;
+            
+            directMatchesA.forEach(match => {
+              if (match.homeTeamId === a.teamId && match.awayTeamId === b.teamId) {
+                if (match.homeScore !== null && match.awayScore !== null) {
+                  if (match.homeScore > match.awayScore) aDirectPoints += 3;
+                  else if (match.homeScore === match.awayScore) {
+                    aDirectPoints += 1;
+                    bDirectPoints += 1;
+                  }
+                  else bDirectPoints += 3;
+                }
+              } else if (match.homeTeamId === b.teamId && match.awayTeamId === a.teamId) {
+                if (match.homeScore !== null && match.awayScore !== null) {
+                  if (match.homeScore > match.awayScore) bDirectPoints += 3;
+                  else if (match.homeScore === match.awayScore) {
+                    aDirectPoints += 1;
+                    bDirectPoints += 1;
+                  }
+                  else aDirectPoints += 3;
+                }
+              }
+            });
+            
+            if (aDirectPoints !== bDirectPoints) {
+              return bDirectPoints - aDirectPoints;
+            }
+            
+            // ثالثاً: فارق الأهداف
             const aDiff = a.goalsFor - a.goalsAgainst;
             const bDiff = b.goalsFor - b.goalsAgainst;
             if (bDiff !== aDiff) {
               return bDiff - aDiff;
             }
+            
+            // رابعاً: الأهداف المسجلة
             return b.goalsFor - a.goalsFor;
           });
         });
@@ -478,10 +520,13 @@ export const useTournamentStore = create<TournamentStore>()(
           .sort((a, b) => b.goals - a.goals)
           .slice(0, limit);
       },
+      
+      getCopyrightInfo: () => {
+        return `© جميع الحقوق محفوظة ${new Date().getFullYear()} - ${get().tournamentName} - ${get().organizer}`;
+      }
     }),
     {
       name: 'tournament-storage',
     }
   )
 );
-

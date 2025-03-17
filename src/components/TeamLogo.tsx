@@ -54,20 +54,30 @@ const TeamLogo = ({ teamId, size = "md", className }: TeamLogoProps) => {
             {team.name.substring(0, 2)}
           </div>
         ) : (
-          <img
-            src={team.logo || "/placeholder.svg"}
-            alt={team.name}
-            className={cn(
-              "w-full h-full object-contain p-1",
-              !imageLoaded && "hidden"
+          <>
+            {team.logo ? (
+              <img
+                src={team.logo}
+                alt={team.name}
+                className={cn(
+                  "w-full h-full object-contain p-1",
+                  !imageLoaded && "hidden"
+                )}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                loading="eager"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                style={{ maxWidth: '100%', maxHeight: '100%' }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-tournament-navy text-xs text-white p-1">
+                {team.name.substring(0, 2)}
+              </div>
             )}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-          />
+          </>
         )}
-        {!imageLoaded && !imageError && (
+        {!imageLoaded && !imageError && team.logo && (
           <div className="w-full h-full flex items-center justify-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
           </div>

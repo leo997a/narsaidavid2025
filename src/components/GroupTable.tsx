@@ -14,7 +14,7 @@ interface GroupTableProps {
 }
 
 const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
-  const { teams, standings, tournamentName, organizer } = useTournamentStore();
+  const { teams, standings, tournamentName, organizer, getCopyrightInfo } = useTournamentStore();
   
   const groupTeams = useMemo(() => {
     return teams.filter(team => team.group === group);
@@ -30,6 +30,9 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
       html2canvas(element, { 
         backgroundColor: '#0f1e45',
         scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
       }).then(canvas => {
         // Add tournament name and group to the canvas
         const ctx = canvas.getContext('2d');
@@ -80,13 +83,14 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         <div>
           {groupTeams.map((team) => {
             const standing = groupStandings.find(s => s.teamId === team.id);
+            const position = standing ? groupStandings.findIndex(s => s.teamId === team.id) + 1 : '-';
             
             return (
               <div key={team.id} className="flex items-center bg-tournament-navy border-b border-tournament-navy/70">
                 {/* Position indicator */}
                 <div className="w-16 h-16 bg-tournament-pink flex items-center justify-center">
                   <span className="text-xl font-bold text-white">
-                    {standing ? groupStandings.findIndex(s => s.teamId === team.id) + 1 : '-'}
+                    {position}
                   </span>
                 </div>
                 
@@ -108,7 +112,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
                       <div>MP: <span className="font-bold">{standing.played}</span></div>
                       <div>W/D/L: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
                       <div>GF/GA: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
-                      <div>GD: <span className="font-bold">{standing.goalsFor - standing.goalsAgainst}</span></div>
+                      <div>GD: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
                     </div>
                   )}
                 </div>
@@ -117,10 +121,54 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
           })}
         </div>
         
-        {/* Decorative bottom elements */}
+        {/* Detailed Stats Table */}
+        <div className="bg-tournament-darkNavy p-4">
+          <Table className="w-full rounded-md overflow-hidden">
+            <TableHeader className="bg-tournament-pink text-white">
+              <TableRow>
+                <TableHead className="text-center text-white">Pos.</TableHead>
+                <TableHead className="text-white">Team</TableHead>
+                <TableHead className="text-center text-white">MP</TableHead>
+                <TableHead className="text-center text-white">W</TableHead>
+                <TableHead className="text-center text-white">D</TableHead>
+                <TableHead className="text-center text-white">L</TableHead>
+                <TableHead className="text-center text-white">GF</TableHead>
+                <TableHead className="text-center text-white">GA</TableHead>
+                <TableHead className="text-center text-white">GD</TableHead>
+                <TableHead className="text-center text-white">PTS</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {groupStandings.map((standing, index) => {
+                const team = teams.find(team => team.id === standing.teamId);
+                if (!team) return null;
+                
+                return (
+                  <TableRow key={team.id} className="bg-tournament-navy border-b border-tournament-navy/70">
+                    <TableCell className="text-center font-bold text-white">{index + 1}</TableCell>
+                    <TableCell className="flex items-center gap-2">
+                      <TeamLogo teamId={team.id} size="sm" />
+                      <span className="text-white">{team.name}</span>
+                    </TableCell>
+                    <TableCell className="text-center text-white">{standing.played}</TableCell>
+                    <TableCell className="text-center text-white">{standing.won}</TableCell>
+                    <TableCell className="text-center text-white">{standing.drawn}</TableCell>
+                    <TableCell className="text-center text-white">{standing.lost}</TableCell>
+                    <TableCell className="text-center text-white">{standing.goalsFor}</TableCell>
+                    <TableCell className="text-center text-white">{standing.goalsAgainst}</TableCell>
+                    <TableCell className="text-center text-white">{standing.goalsFor - standing.goalsAgainst}</TableCell>
+                    <TableCell className="text-center font-bold text-white">{standing.points}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+        
+        {/* Copyright and Decorative bottom elements */}
         <div className="bg-tournament-darkNavy py-4 px-4 relative">
           <div className="text-right text-tournament-accent/80 text-sm">
-            {organizer}
+            {getCopyrightInfo()}
           </div>
           <div className="absolute bottom-0 right-0 w-40 h-1 bg-tournament-accent"></div>
           <div className="absolute bottom-8 left-8 w-40 h-1 bg-tournament-pink"></div>
@@ -129,9 +177,14 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
       
       {showControls && (
         <div className="flex justify-end mt-4">
-          <Button variant="outline" size="sm" onClick={downloadAsImage} className="flex items-center gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={downloadAsImage} 
+            className="flex items-center gap-1"
+          >
             <Download size={16} />
-            <span>تحميل الترتيب</span>
+            <span>تحميل ترتيب المجموعة {group}</span>
           </Button>
         </div>
       )}
