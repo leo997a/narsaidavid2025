@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CalendarIcon, Upload, ImageIcon } from "lucide-react";
+import { CalendarIcon, Upload, ImageIcon, LogOut } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -20,6 +19,17 @@ import {
 import { cn } from "@/lib/utils";
 import PlayerStats from "@/components/PlayerStats";
 import MatchCard from "@/components/MatchCard";
+import ImageUploader from "@/components/ImageUploader";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
+import { useDateFormatStore } from "@/store/dateFormatStore";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 const Admin = () => {
   const { 
@@ -44,6 +54,11 @@ const Admin = () => {
   const [newCopyright, setNewCopyright] = useState(copyright || "");
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [newTeamLogo, setNewTeamLogo] = useState("");
+  
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+  
+  const { format: dateFormat, setFormat: setDateFormat } = useDateFormatStore();
   
   // تصفية المباريات حسب حالتها
   const upcomingMatches = matches.filter(match => match.status === 'upcoming');
@@ -96,11 +111,29 @@ const Admin = () => {
       }
     }
   };
+  
+  const handleImageUpload = (base64Image: string) => {
+    if (editingTeamId) {
+      setNewTeamLogo(base64Image);
+    }
+  };
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    toast.success('تم تسجيل الخروج بنجاح');
+  };
 
   return (
     <Layout>
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
+        <div className="flex gap-2 items-center">
+          <Button variant="outline" onClick={handleLogout} className="flex items-center gap-1">
+            <LogOut size={16} />
+            <span>تسجيل الخروج</span>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="tournament" className="space-y-6">
@@ -144,6 +177,21 @@ const Admin = () => {
                       placeholder="مثال: © 2025 جميع الحقوق محفوظة"
                     />
                   </div>
+                  <div>
+                    <Label>نوع التاريخ المستخدم</Label>
+                    <Select
+                      value={dateFormat}
+                      onValueChange={(value: 'gregorian' | 'hijri') => setDateFormat(value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="اختر نوع التاريخ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gregorian">ميلادي (2025/3/17)</SelectItem>
+                        <SelectItem value="hijri">هجري (١٤٤٦/٩/٢٠)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 
                 <div className="flex justify-end gap-2 mt-4">
@@ -166,9 +214,15 @@ const Admin = () => {
                     <Label className="text-sm text-gray-400">اسم المنظم / اللجنة</Label>
                     <p className="text-lg font-semibold">{organizer}</p>
                   </div>
-                  <div className="p-4 bg-tournament-navy rounded-lg col-span-2">
+                  <div className="p-4 bg-tournament-navy rounded-lg">
                     <Label className="text-sm text-gray-400">نص حقوق الطبع والنشر</Label>
                     <p className="text-lg font-semibold">{copyright || "© 2025 جميع الحقوق محفوظة"}</p>
+                  </div>
+                  <div className="p-4 bg-tournament-navy rounded-lg">
+                    <Label className="text-sm text-gray-400">نوع التاريخ المستخدم</Label>
+                    <p className="text-lg font-semibold">
+                      {dateFormat === 'gregorian' ? 'ميلادي (2025/3/17)' : 'هجري (١٤٤٦/٩/٢٠)'}
+                    </p>
                   </div>
                 </div>
                 
@@ -243,9 +297,16 @@ const Admin = () => {
                       placeholder="أدخل رابط URL للشعار..."
                       className="mb-2"
                     />
-                    <p className="text-xs text-gray-400">
-                      أدخل رابط URL كامل للصورة. مثال: https://example.com/logo.png
+                    <p className="text-xs text-gray-400 mb-2">
+                      أدخل رابط URL كامل للصورة أو استخدم زر تحميل الصورة أدناه
                     </p>
+                    
+                    <div className="mt-2">
+                      <ImageUploader 
+                        onImageSelect={handleImageUpload} 
+                        buttonText="تحميل شعار من جهازك"
+                      />
+                    </div>
                   </div>
                 </div>
                 
