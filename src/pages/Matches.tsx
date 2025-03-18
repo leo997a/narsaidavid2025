@@ -5,14 +5,10 @@ import MatchCard from '@/components/MatchCard';
 import { useTournamentStore } from '@/store/tournamentStore';
 import { useAuthStore } from '@/store/authStore';
 import { format, parseISO } from 'date-fns';
-import { useDateFormatStore } from '@/store/dateFormatStore';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Matches = () => {
   const { matches, tournamentName } = useTournamentStore();
   const { isAuthenticated } = useAuthStore();
-  const { format: dateFormat } = useDateFormatStore();
-  const isMobile = useIsMobile();
 
   // تجميع المباريات حسب التاريخ
   const matchesByDate = matches.reduce((acc, match) => {
@@ -31,7 +27,7 @@ const Matches = () => {
   const formatDate = (dateString: string) => {
     try {
       const date = parseISO(dateString);
-      // استخدام فقط التنسيق الميلادي كما هو مطلوب
+      // استخدام التنسيق الميلادي فقط كما هو مطلوب
       return format(date, 'dd/MM/yyyy');
     } catch (error) {
       return dateString;

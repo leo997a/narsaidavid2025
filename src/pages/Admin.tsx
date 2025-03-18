@@ -56,6 +56,7 @@ const Admin = () => {
   const [newCopyright, setNewCopyright] = useState(copyright || "");
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [newTeamLogo, setNewTeamLogo] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
   
   const { logout } = useAuthStore();
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const Admin = () => {
     updateTournamentInfo(newTournamentName, newOrganizer, newCopyright);
     setEditingInfo(false);
     saveAllData();
-    toast.success("تم تحديث معلومات البطولة بنجاح");
+    showSaveSuccess();
   };
 
   const handleEditTeamLogo = (teamId: string) => {
@@ -110,7 +111,7 @@ const Admin = () => {
           logo: newTeamLogo
         });
         saveAllData();
-        toast.success(`تم تحديث شعار ${team.name} بنجاح`);
+        showSaveSuccess(`تم تحديث شعار ${team.name} بنجاح`);
         setEditingTeamId(null);
         setNewTeamLogo("");
       }
@@ -132,7 +133,18 @@ const Admin = () => {
   // حفظ كل التغييرات في localStorage وتأكيد ذلك للمستخدم
   const handleSaveAllChanges = () => {
     saveAllData();
-    toast.success('تم حفظ جميع التغييرات بنجاح');
+    showSaveSuccess('تم حفظ جميع التغييرات بنجاح');
+  };
+  
+  // إظهار رسالة نجاح الحفظ
+  const showSaveSuccess = (message = 'تم حفظ جميع التغييرات بنجاح') => {
+    setSaveSuccess(true);
+    toast.success(message);
+    
+    // إخفاء رسالة النجاح بعد 3 ثواني
+    setTimeout(() => {
+      setSaveSuccess(false);
+    }, 3000);
   };
   
   // وظيفة العودة إلى الصفحة السابقة
@@ -157,12 +169,12 @@ const Admin = () => {
         </div>
         <div className="flex gap-2 items-center">
           <Button 
-            variant="default" 
+            variant={saveSuccess ? "outline" : "default"}
             onClick={handleSaveAllChanges} 
-            className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
+            className={`flex items-center gap-1 ${saveSuccess ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-green-600 hover:bg-green-700'}`}
           >
             <Save size={16} />
-            <span>حفظ التغييرات</span>
+            <span>{saveSuccess ? 'تم الحفظ!' : 'حفظ التغييرات'}</span>
           </Button>
           <Button variant="outline" onClick={handleLogout} className="flex items-center gap-1">
             <LogOut size={16} />

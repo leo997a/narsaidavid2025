@@ -2,32 +2,25 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Team, Player, Match, GroupStanding, KnockoutMatch } from '../types';
 
-// البيانات الأولية للبطولة مع تحديث روابط الصور
 const initialTeams: Team[] = [
-  // المجموعة A
   { id: 'khoyada-a', name: 'KHOYADA A', logo: 'https://www2.0zz0.com/2025/03/16/18/518716787.png', group: 'A' },
   { id: 'barwar-b', name: 'BARWAR B', logo: 'https://www2.0zz0.com/2025/03/16/18/214508191.jpg', group: 'A' },
   { id: 'hakkare', name: 'HAKKARE', logo: 'https://www2.0zz0.com/2025/03/16/18/177671746.png', group: 'A' },
   
-  // المجموعة B
   { id: 'barwar-a', name: 'BARWAR A', logo: 'https://www2.0zz0.com/2025/03/16/18/322348416.jpg', group: 'B' },
   { id: 'nergal', name: 'NERGAL', logo: 'https://www2.0zz0.com/2025/03/16/18/844566857.png', group: 'B' },
   { id: 'mangesh', name: 'MANGESH', logo: 'https://www2.0zz0.com/2025/03/16/18/314810508.png', group: 'B' },
   
-  // المجموعة C
   { id: 'rafiden', name: 'RAFIDEN', logo: 'https://www2.0zz0.com/2025/03/16/18/729221934.png', group: 'C' },
   { id: 'gaznakh', name: 'GAZNAKH', logo: 'https://www2.0zz0.com/2025/03/16/18/125590941.png', group: 'C' },
   { id: 'batnaye', name: 'BATNAYE', logo: 'https://www2.0zz0.com/2025/03/16/18/212549849.png', group: 'C' },
   
-  // المجموعة D
   { id: 'nala', name: 'NALA', logo: 'https://www2.0zz0.com/2025/03/16/18/840537525.png', group: 'D' },
   { id: 'karanjo', name: 'KARANJO', logo: 'https://www2.0zz0.com/2025/03/16/18/840544347.png', group: 'D' },
   { id: 'khoyada-b', name: 'KHOYADA B', logo: 'https://www2.0zz0.com/2025/03/16/18/281866893.png', group: 'D' },
 ];
 
-// البيانات الأولية للمباريات استنادًا إلى الصور المرفقة
 const initialMatches: Match[] = [
-  // اليوم الأول
   { 
     id: 'day1-match1', 
     homeTeamId: 'khoyada-a', 
@@ -71,7 +64,6 @@ const initialMatches: Match[] = [
     redCards: { homeTeam: 0, awayTeam: 0 }
   },
   
-  // اليوم الثاني
   { 
     id: 'day2-match1', 
     homeTeamId: 'barwar-a', 
@@ -115,7 +107,6 @@ const initialMatches: Match[] = [
     redCards: { homeTeam: 0, awayTeam: 0 }
   },
   
-  // اليوم الثالث
   { 
     id: 'day3-match1', 
     homeTeamId: 'hakkare', 
@@ -159,7 +150,6 @@ const initialMatches: Match[] = [
     redCards: { homeTeam: 0, awayTeam: 0 }
   },
   
-  // اليوم الرابع
   { 
     id: 'day4-match1', 
     homeTeamId: 'khoyada-a', 
@@ -204,29 +194,22 @@ const initialMatches: Match[] = [
   },
 ];
 
-// بيانات اللاعبين - سنضيف تمثيل أولي
 const initialPlayers: Player[] = [
-  // أمثلة للاعبين من كل فريق
   { id: 'player1', name: 'لاعب 1', teamId: 'khoyada-a', goals: 0, assists: 0, yellowCards: 0, redCards: 0 },
   { id: 'player2', name: 'لاعب 2', teamId: 'khoyada-a', goals: 0, assists: 0, yellowCards: 0, redCards: 0 },
   { id: 'player3', name: 'لاعب 3', teamId: 'barwar-b', goals: 0, assists: 0, yellowCards: 0, redCards: 0 },
   { id: 'player4', name: 'لاعب 4', teamId: 'barwar-b', goals: 0, assists: 0, yellowCards: 0, redCards: 0 },
-  // يمكن إضافة المزيد من اللاعبين لاحقًا
 ];
 
-// بيانات الأدوار الإقصائية - تكون فارغة في البداية وتملأ عند انتهاء دور المجموعات
 const initialKnockoutMatches: KnockoutMatch[] = [
-  // ربع النهائي
   { id: 'qf1', position: 'QF1', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'sf1', stage: 'quarterfinal' },
   { id: 'qf2', position: 'QF2', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'sf1', stage: 'quarterfinal' },
   { id: 'qf3', position: 'QF3', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'sf2', stage: 'quarterfinal' },
   { id: 'qf4', position: 'QF4', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'sf2', stage: 'quarterfinal' },
   
-  // نصف النهائي
   { id: 'sf1', position: 'SF1', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'final', stage: 'semifinal' },
   { id: 'sf2', position: 'SF2', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: 'final', stage: 'semifinal' },
   
-  // النهائي
   { id: 'final', position: 'F', teamAId: null, teamBId: null, teamAScore: null, teamBScore: null, winner: null, nextMatchId: null, stage: 'final' },
 ];
 
@@ -240,7 +223,6 @@ type TournamentStore = {
   organizer: string;
   copyright: string | null;
   
-  // وظائف إدارة البيانات
   addPlayer: (player: Player) => void;
   updatePlayer: (player: Player) => void;
   updateMatch: (match: Match) => void;
@@ -251,7 +233,6 @@ type TournamentStore = {
   updateTeam: (team: Team) => void;
   saveAllData: () => void;
   
-  // وظائف مساعدة
   getTeamById: (id: string) => Team | undefined;
   getPlayersByTeam: (teamId: string) => Player[];
   getTopScorers: (limit?: number) => Player[];
@@ -279,6 +260,7 @@ export const useTournamentStore = create<TournamentStore>()(
         set((state) => ({
           players: [...state.players, player]
         }));
+        get().saveAllData();
       },
       
       updatePlayer: (updatedPlayer) => {
@@ -287,6 +269,7 @@ export const useTournamentStore = create<TournamentStore>()(
             player.id === updatedPlayer.id ? updatedPlayer : player
           )
         }));
+        get().saveAllData();
       },
       
       updateMatch: (updatedMatch) => {
@@ -295,9 +278,7 @@ export const useTournamentStore = create<TournamentStore>()(
             match.id === updatedMatch.id ? updatedMatch : match
           )
         }));
-        // حساب ترتيب المجموعات تلقائيًا عند تحديث مباراة
         get().calculateStandings();
-        // تأكيد حفظ البيانات بعد التحديث
         get().saveAllData();
       },
       
@@ -308,11 +289,9 @@ export const useTournamentStore = create<TournamentStore>()(
           )
         }));
         
-        // تحديث المباراة التالية إذا تم تحديد الفائز
         if (updatedMatch.winner && updatedMatch.nextMatchId) {
           const nextMatch = get().knockoutMatches.find(m => m.id === updatedMatch.nextMatchId);
           if (nextMatch) {
-            // تحديد الفريق A أو B في المباراة التالية بناءً على موقع المباراة الحالية
             const updatedNextMatch = { ...nextMatch };
             
             if (updatedMatch.position.includes('QF1') || updatedMatch.position.includes('QF2')) {
@@ -333,7 +312,6 @@ export const useTournamentStore = create<TournamentStore>()(
           }
         }
         
-        // تأكيد حفظ البيانات بعد التحديث
         get().saveAllData();
       },
       
@@ -341,7 +319,6 @@ export const useTournamentStore = create<TournamentStore>()(
         const { teams, matches } = get();
         const completedMatches = matches.filter(m => m.status === 'completed' && m.stage === 'group');
         
-        // تهيئة الترتيب
         const newStandings: Record<string, GroupStanding[]> = {
           A: [],
           B: [],
@@ -349,7 +326,6 @@ export const useTournamentStore = create<TournamentStore>()(
           D: [],
         };
         
-        // إنشاء ترتيب أولي للفرق
         teams.forEach(team => {
           const groupStanding: GroupStanding = {
             teamId: team.id,
@@ -367,10 +343,8 @@ export const useTournamentStore = create<TournamentStore>()(
           }
         });
         
-        // حساب النقاط والإحصائيات
         completedMatches.forEach(match => {
           if (match.homeScore !== null && match.awayScore !== null && match.group) {
-            // تحديث إحصائيات الفريق المضيف
             const homeStanding = newStandings[match.group].find(s => s.teamId === match.homeTeamId);
             if (homeStanding) {
               homeStanding.played += 1;
@@ -388,7 +362,6 @@ export const useTournamentStore = create<TournamentStore>()(
               }
             }
             
-            // تحديث إحصائيات الفريق الضيف
             const awayStanding = newStandings[match.group].find(s => s.teamId === match.awayTeamId);
             if (awayStanding) {
               awayStanding.played += 1;
@@ -408,16 +381,12 @@ export const useTournamentStore = create<TournamentStore>()(
           }
         });
         
-        // ترتيب الفرق حسب النقاط ثم فارق الأهداف ثم الأهداف المسجلة
         Object.keys(newStandings).forEach(group => {
           newStandings[group].sort((a, b) => {
-            // أولاً: ترتيب حسب النقاط
             if (b.points !== a.points) {
               return b.points - a.points;
             }
             
-            // ثانياً: نتائج المواجهات المباشرة (تنفيذ بسيط)
-            // هذا تنفيذ مبسط، للمواجهات المباشرة نحتاج معرفة من فاز على من
             const directMatchesA = completedMatches.filter(m => 
               (m.homeTeamId === a.teamId && m.awayTeamId === b.teamId) || 
               (m.homeTeamId === b.teamId && m.awayTeamId === a.teamId)
@@ -452,14 +421,12 @@ export const useTournamentStore = create<TournamentStore>()(
               return bDirectPoints - aDirectPoints;
             }
             
-            // ثالثاً: فارق الأهداف
             const aDiff = a.goalsFor - a.goalsAgainst;
             const bDiff = b.goalsFor - b.goalsAgainst;
             if (bDiff !== aDiff) {
               return bDiff - aDiff;
             }
             
-            // رابعاً: الأهداف المسجلة
             return b.goalsFor - a.goalsFor;
           });
         });
@@ -470,8 +437,6 @@ export const useTournamentStore = create<TournamentStore>()(
       setQualifiedTeams: () => {
         const { standings, knockoutMatches } = get();
         
-        // تعيين الفرق المتأهلة إلى ربع النهائي
-        // الأول من كل مجموعة والثاني من كل مجموعة
         const qfMatches = [...knockoutMatches];
         
         if (
@@ -480,28 +445,24 @@ export const useTournamentStore = create<TournamentStore>()(
           standings.C.length >= 1 && 
           standings.D.length >= 1
         ) {
-          // ربع النهائي 1: أول المجموعة A ضد ثاني المجموعة B
           const qf1 = qfMatches.find(m => m.id === 'qf1');
           if (qf1) {
             qf1.teamAId = standings.A[0]?.teamId || null;
             qf1.teamBId = standings.B[1]?.teamId || null;
           }
           
-          // ربع النهائي 2: أول المجموعة B ضد ثاني المجموعة A
           const qf2 = qfMatches.find(m => m.id === 'qf2');
           if (qf2) {
             qf2.teamAId = standings.B[0]?.teamId || null;
             qf2.teamBId = standings.A[1]?.teamId || null;
           }
           
-          // ربع النهائي 3: أول المجموعة C ضد ثاني المجموعة D
           const qf3 = qfMatches.find(m => m.id === 'qf3');
           if (qf3) {
             qf3.teamAId = standings.C[0]?.teamId || null;
             qf3.teamBId = standings.D[1]?.teamId || null;
           }
           
-          // ربع النهائي 4: أول المجموعة D ضد ثاني المجموعة C
           const qf4 = qfMatches.find(m => m.id === 'qf4');
           if (qf4) {
             qf4.teamAId = standings.D[0]?.teamId || null;
@@ -514,7 +475,6 @@ export const useTournamentStore = create<TournamentStore>()(
       
       updateTournamentInfo: (name: string, organizer: string, copyright: string) => {
         set({ tournamentName: name, organizer: organizer, copyright: copyright });
-        // تأكيد حفظ البيانات بعد التحديث
         get().saveAllData();
       },
       
@@ -524,16 +484,14 @@ export const useTournamentStore = create<TournamentStore>()(
             team.id === updatedTeam.id ? updatedTeam : team
           )
         }));
-        // تأكيد حفظ البيانات بعد التحديث
         get().saveAllData();
       },
       
       saveAllData: () => {
-        // الوظيفة فارغة لأن Zustand مع middleware persist يحفظ البيانات تلقائيًا
-        // ولكننا نضيفها للتأكيد وللاستخدام في واجهة المستخدم
+        set(state => ({ ...state }));
+        
         console.log('تم حفظ جميع البيانات في المستودع المحلي', new Date().toISOString());
         
-        // تحديث الترتيب العام للمجموعات قبل الحفظ
         get().calculateStandings();
       },
       
@@ -557,7 +515,6 @@ export const useTournamentStore = create<TournamentStore>()(
     }),
     {
       name: 'tournament-storage',
-      // تأكيد حفظ البيانات في التخزين المحلي مباشرة بعد أي تغيير
       skipHydration: false,
     }
   )
