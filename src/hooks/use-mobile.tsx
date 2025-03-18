@@ -1,23 +1,27 @@
 
-import * as React from "react"
+import { useState, useEffect } from "react"
 
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean>(window.innerWidth < MOBILE_BREAKPOINT)
+  // ابدأ بافتراض أنه ليس جهازًا محمولًا، ثم تحقق بعد تحميل الصفحة
+  const [isMobile, setIsMobile] = useState<boolean>(false)
+  const [isClient, setIsClient] = useState<boolean>(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setIsClient(true)
+    
     const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    // Set the initial value
+    // ضبط القيمة الأولية
     handleResize()
     
-    // Add event listener
+    // إضافة مستمع للأحداث
     window.addEventListener("resize", handleResize)
     
-    // Clean up
+    // التنظيف
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
