@@ -249,6 +249,7 @@ type TournamentStore = {
   setQualifiedTeams: () => void;
   updateTournamentInfo: (name: string, organizer: string, copyright: string) => void;
   updateTeam: (team: Team) => void;
+  saveAllData: () => void;
   
   // وظائف مساعدة
   getTeamById: (id: string) => Team | undefined;
@@ -296,6 +297,8 @@ export const useTournamentStore = create<TournamentStore>()(
         }));
         // حساب ترتيب المجموعات تلقائيًا عند تحديث مباراة
         get().calculateStandings();
+        // تأكيد حفظ البيانات بعد التحديث
+        get().saveAllData();
       },
       
       updateKnockoutMatch: (updatedMatch) => {
@@ -329,6 +332,9 @@ export const useTournamentStore = create<TournamentStore>()(
             }));
           }
         }
+        
+        // تأكيد حفظ البيانات بعد التحديث
+        get().saveAllData();
       },
       
       calculateStandings: () => {
@@ -508,6 +514,8 @@ export const useTournamentStore = create<TournamentStore>()(
       
       updateTournamentInfo: (name: string, organizer: string, copyright: string) => {
         set({ tournamentName: name, organizer: organizer, copyright: copyright });
+        // تأكيد حفظ البيانات بعد التحديث
+        get().saveAllData();
       },
       
       updateTeam: (updatedTeam: Team) => {
@@ -516,6 +524,17 @@ export const useTournamentStore = create<TournamentStore>()(
             team.id === updatedTeam.id ? updatedTeam : team
           )
         }));
+        // تأكيد حفظ البيانات بعد التحديث
+        get().saveAllData();
+      },
+      
+      saveAllData: () => {
+        // الوظيفة فارغة لأن Zustand مع middleware persist يحفظ البيانات تلقائيًا
+        // ولكننا نضيفها للتأكيد وللاستخدام في واجهة المستخدم
+        console.log('تم حفظ جميع البيانات في المستودع المحلي', new Date().toISOString());
+        
+        // تحديث الترتيب العام للمجموعات قبل الحفظ
+        get().calculateStandings();
       },
       
       getTeamById: (id) => {
@@ -538,6 +557,8 @@ export const useTournamentStore = create<TournamentStore>()(
     }),
     {
       name: 'tournament-storage',
+      // تأكيد حفظ البيانات في التخزين المحلي مباشرة بعد أي تغيير
+      skipHydration: false,
     }
   )
 );

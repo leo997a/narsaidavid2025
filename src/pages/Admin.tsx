@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useTournamentStore } from "@/store/tournamentStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CalendarIcon, Upload, ImageIcon, LogOut, Save, RefreshCw } from "lucide-react";
+import { CalendarIcon, Upload, ImageIcon, LogOut, Save, RefreshCw, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -45,7 +45,8 @@ const Admin = () => {
     organizer,
     copyright,
     updateTournamentInfo,
-    updateTeam
+    updateTeam,
+    saveAllData
   } = useTournamentStore();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,6 +89,7 @@ const Admin = () => {
   const handleSaveTournamentInfo = () => {
     updateTournamentInfo(newTournamentName, newOrganizer, newCopyright);
     setEditingInfo(false);
+    saveAllData();
     toast.success("تم تحديث معلومات البطولة بنجاح");
   };
 
@@ -107,6 +109,7 @@ const Admin = () => {
           ...team,
           logo: newTeamLogo
         });
+        saveAllData();
         toast.success(`تم تحديث شعار ${team.name} بنجاح`);
         setEditingTeamId(null);
         setNewTeamLogo("");
@@ -126,16 +129,32 @@ const Admin = () => {
     toast.success('تم تسجيل الخروج بنجاح');
   };
 
-  // حفظ كل التغييرات في localStorage
+  // حفظ كل التغييرات في localStorage وتأكيد ذلك للمستخدم
   const handleSaveAllChanges = () => {
-    // التغييرات تحفظ تلقائيًا باستخدام Zustand persist
+    saveAllData();
     toast.success('تم حفظ جميع التغييرات بنجاح');
+  };
+  
+  // وظيفة العودة إلى الصفحة السابقة
+  const handleGoBack = () => {
+    navigate(-1);
   };
 
   return (
     <Layout>
       <div className="mb-6 flex flex-wrap justify-between items-center gap-2">
-        <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleGoBack} 
+            className="flex items-center gap-1"
+            size="sm"
+          >
+            <ArrowLeft size={16} />
+            <span>العودة</span>
+          </Button>
+          <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
+        </div>
         <div className="flex gap-2 items-center">
           <Button 
             variant="default" 

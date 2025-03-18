@@ -99,7 +99,7 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         </div>
         
         {/* Team List */}
-        <div className="overflow-x-auto">
+        <div>
           {groupStandings.map((standing, index) => {
             const team = teams.find(t => t.id === standing.teamId);
             if (!team) return null;
@@ -138,49 +138,82 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
           })}
         </div>
         
-        {/* Detailed Stats Table - Scrollable on mobile */}
-        <div className="bg-tournament-darkNavy p-4 overflow-x-auto">
-          <Table className="w-full rounded-md overflow-hidden min-w-[600px]">
-            <TableHeader className="bg-tournament-pink text-white">
-              <TableRow>
-                <TableHead className="text-center text-white">المركز</TableHead>
-                <TableHead className="text-white">الفريق</TableHead>
-                <TableHead className="text-center text-white">مباريات</TableHead>
-                <TableHead className="text-center text-white">فوز</TableHead>
-                <TableHead className="text-center text-white">تعادل</TableHead>
-                <TableHead className="text-center text-white">خسارة</TableHead>
-                <TableHead className="text-center text-white">له</TableHead>
-                <TableHead className="text-center text-white">عليه</TableHead>
-                <TableHead className="text-center text-white">+/-</TableHead>
-                <TableHead className="text-center text-white">نقاط</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {groupStandings.map((standing, index) => {
-                const team = teams.find(team => team.id === standing.teamId);
-                if (!team) return null;
-                
-                return (
-                  <TableRow key={team.id} className="bg-tournament-navy border-b border-tournament-navy/70">
-                    <TableCell className="text-center font-bold text-white">{index + 1}</TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      <TeamLogo teamId={team.id} size="sm" />
-                      <span className="text-white">{team.name}</span>
-                    </TableCell>
-                    <TableCell className="text-center text-white">{standing.played}</TableCell>
-                    <TableCell className="text-center text-white">{standing.won}</TableCell>
-                    <TableCell className="text-center text-white">{standing.drawn}</TableCell>
-                    <TableCell className="text-center text-white">{standing.lost}</TableCell>
-                    <TableCell className="text-center text-white">{standing.goalsFor}</TableCell>
-                    <TableCell className="text-center text-white">{standing.goalsAgainst}</TableCell>
-                    <TableCell className="text-center text-white">{standing.goalsFor - standing.goalsAgainst}</TableCell>
-                    <TableCell className="text-center font-bold text-white">{standing.points}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        {/* Detailed Stats Table - Made fully responsive */}
+        <div className="bg-tournament-darkNavy p-4">
+          <div className="w-full overflow-visible">
+            <table className="w-full border-collapse">
+              <thead className="bg-tournament-pink text-white">
+                <tr>
+                  <th className="p-2 text-center">المركز</th>
+                  <th className="p-2 text-right">الفريق</th>
+                  <th className="p-2 text-center">مباريات</th>
+                  <th className="p-2 text-center">فوز</th>
+                  <th className="p-2 text-center">تعادل</th>
+                  <th className="p-2 text-center">خسارة</th>
+                  <th className="p-2 text-center">له</th>
+                  <th className="p-2 text-center">عليه</th>
+                  <th className="p-2 text-center">+/-</th>
+                  <th className="p-2 text-center">نقاط</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groupStandings.map((standing, index) => {
+                  const team = teams.find(team => team.id === standing.teamId);
+                  if (!team) return null;
+                  
+                  return (
+                    <tr key={team.id} className="bg-tournament-navy border-b border-tournament-navy/70">
+                      <td className="p-2 text-center font-bold text-white">{index + 1}</td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <TeamLogo teamId={team.id} size="sm" />
+                          <span className="text-white whitespace-nowrap">{team.name}</span>
+                        </div>
+                      </td>
+                      <td className="p-2 text-center text-white">{standing.played}</td>
+                      <td className="p-2 text-center text-white">{standing.won}</td>
+                      <td className="p-2 text-center text-white">{standing.drawn}</td>
+                      <td className="p-2 text-center text-white">{standing.lost}</td>
+                      <td className="p-2 text-center text-white">{standing.goalsFor}</td>
+                      <td className="p-2 text-center text-white">{standing.goalsAgainst}</td>
+                      <td className="p-2 text-center text-white">{standing.goalsFor - standing.goalsAgainst}</td>
+                      <td className="p-2 text-center font-bold text-white">{standing.points}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
+        
+        {/* For mobile, show a more compact version of the table */}
+        {isMobile && (
+          <div className="bg-tournament-darkNavy p-4 md:hidden">
+            {groupStandings.map((standing, index) => {
+              const team = teams.find(team => team.id === standing.teamId);
+              if (!team) return null;
+              
+              return (
+                <div key={team.id} className="mb-4 p-3 bg-tournament-navy rounded-md">
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-tournament-pink flex items-center justify-center rounded-full mr-2">
+                      <span className="text-sm font-bold text-white">{index + 1}</span>
+                    </div>
+                    <TeamLogo teamId={team.id} size="sm" />
+                    <h3 className="mr-2 text-lg font-bold">{team.name}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>مباريات: <span className="font-bold">{standing.played}</span></div>
+                    <div>نقاط: <span className="font-bold">{standing.points}</span></div>
+                    <div>فوز/تعادل/خسارة: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
+                    <div>له/عليه: <span className="font-bold">{standing.goalsFor}/{standing.goalsAgainst}</span></div>
+                    <div className="col-span-2">فارق الأهداف: <span className="font-bold text-tournament-accent">{standing.goalsFor - standing.goalsAgainst}</span></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
         
         {/* Copyright and Decorative bottom elements */}
         <div className="bg-tournament-darkNavy py-4 px-4 relative">
