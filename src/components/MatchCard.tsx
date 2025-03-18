@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Match } from "@/types";
 import { useTournamentStore } from "@/store/tournamentStore";
+import { useAuthStore } from "@/store/authStore";
 import TeamLogo from "./TeamLogo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,8 +17,9 @@ interface MatchCardProps {
   className?: string;
 }
 
-const MatchCard = ({ match, editable = true, className }: MatchCardProps) => {
+const MatchCard = ({ match, editable = false, className }: MatchCardProps) => {
   const { getTeamById, updateMatch } = useTournamentStore();
+  const { isAuthenticated } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedMatch, setEditedMatch] = useState<Match>(match);
 
@@ -66,7 +68,7 @@ const MatchCard = ({ match, editable = true, className }: MatchCardProps) => {
         </div>
 
         <div className="mt-2 flex justify-end">
-          {editable && (
+          {editable && isAuthenticated && (
             <Button 
               variant="ghost" 
               size="sm" 

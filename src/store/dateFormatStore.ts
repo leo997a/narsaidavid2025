@@ -12,7 +12,7 @@ interface DateFormatState {
 export const useDateFormatStore = create<DateFormatState>()(
   persist(
     (set) => ({
-      format: 'gregorian',
+      format: 'gregorian', // Default to Gregorian format
       setFormat: (format) => set({ format }),
     }),
     {

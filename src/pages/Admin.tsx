@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CalendarIcon, Upload, ImageIcon, LogOut } from "lucide-react";
+import { CalendarIcon, Upload, ImageIcon, LogOut, Save, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Admin = () => {
   const { 
@@ -57,6 +58,7 @@ const Admin = () => {
   
   const { logout } = useAuthStore();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const { format: dateFormat, setFormat: setDateFormat } = useDateFormatStore();
   
@@ -124,11 +126,25 @@ const Admin = () => {
     toast.success('تم تسجيل الخروج بنجاح');
   };
 
+  // حفظ كل التغييرات في localStorage
+  const handleSaveAllChanges = () => {
+    // التغييرات تحفظ تلقائيًا باستخدام Zustand persist
+    toast.success('تم حفظ جميع التغييرات بنجاح');
+  };
+
   return (
     <Layout>
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-wrap justify-between items-center gap-2">
         <h1 className="text-2xl font-bold">لوحة الإدارة</h1>
         <div className="flex gap-2 items-center">
+          <Button 
+            variant="default" 
+            onClick={handleSaveAllChanges} 
+            className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
+          >
+            <Save size={16} />
+            <span>حفظ التغييرات</span>
+          </Button>
           <Button variant="outline" onClick={handleLogout} className="flex items-center gap-1">
             <LogOut size={16} />
             <span>تسجيل الخروج</span>
@@ -137,7 +153,7 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="tournament" className="space-y-6">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
           <TabsTrigger value="tournament">معلومات البطولة</TabsTrigger>
           <TabsTrigger value="matches">المباريات</TabsTrigger>
           <TabsTrigger value="teams">الفرق واللاعبين</TabsTrigger>
@@ -205,7 +221,7 @@ const Admin = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-tournament-navy rounded-lg">
                     <Label className="text-sm text-gray-400">اسم البطولة</Label>
                     <p className="text-lg font-semibold">{tournamentName}</p>
@@ -238,42 +254,72 @@ const Admin = () => {
         
         {/* قسم المباريات */}
         <TabsContent value="matches" className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap gap-2 justify-between items-center">
             <Input
               placeholder="بحث عن مباراة..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-sm"
             />
-            <Button onClick={handleRefreshStandings}>تحديث ترتيب المجموعات</Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleRefreshStandings} 
+                className="flex items-center gap-1"
+              >
+                <RefreshCw size={16} />
+                <span>تحديث ترتيب المجموعات</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleSaveAllChanges} 
+                className="flex items-center gap-1"
+              >
+                <Save size={16} />
+                <span>حفظ التغييرات</span>
+              </Button>
+            </div>
           </div>
           
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">المباريات القادمة</h2>
-            {upcomingMatches.length > 0 ? (
-              upcomingMatches.map(match => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <p>لا توجد مباريات قادمة</p>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {upcomingMatches.length > 0 ? (
+                upcomingMatches.map(match => (
+                  <MatchCard key={match.id} match={match} editable={true} />
+                ))
+              ) : (
+                <p>لا توجد مباريات قادمة</p>
+              )}
+            </div>
             
             <h2 className="text-xl font-semibold mt-8">المباريات المكتملة</h2>
-            {completedMatches.length > 0 ? (
-              completedMatches.map(match => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <p>لا توجد مباريات مكتملة</p>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {completedMatches.length > 0 ? (
+                completedMatches.map(match => (
+                  <MatchCard key={match.id} match={match} editable={true} />
+                ))
+              ) : (
+                <p>لا توجد مباريات مكتملة</p>
+              )}
+            </div>
           </div>
         </TabsContent>
         
         {/* قسم الفرق واللاعبين */}
         <TabsContent value="teams" className="space-y-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">إدارة الفرق واللاعبين</h2>
-            <Button onClick={handleQualifyTeams}>تأهيل الفرق للأدوار الإقصائية</Button>
+            <div className="flex gap-2">
+              <Button onClick={handleQualifyTeams}>تأهيل الفرق للأدوار الإقصائية</Button>
+              <Button 
+                variant="outline" 
+                onClick={handleSaveAllChanges} 
+                className="flex items-center gap-1"
+              >
+                <Save size={16} />
+                <span>حفظ التغييرات</span>
+              </Button>
+            </div>
           </div>
           
           {editingTeamId && (
@@ -283,7 +329,7 @@ const Admin = () => {
               </h3>
               
               <div className="space-y-4">
-                <div className="flex gap-4 items-center">
+                <div className="flex flex-col md:flex-row gap-4 items-center">
                   <div>
                     <TeamLogo teamId={editingTeamId} size="lg" />
                   </div>
@@ -358,7 +404,17 @@ const Admin = () => {
         
         {/* قسم الأدوار الإقصائية */}
         <TabsContent value="knockout" className="space-y-6">
-          <h2 className="text-xl font-semibold mb-4">إدارة الأدوار الإقصائية</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">إدارة الأدوار الإقصائية</h2>
+            <Button 
+              variant="outline" 
+              onClick={handleSaveAllChanges} 
+              className="flex items-center gap-1"
+            >
+              <Save size={16} />
+              <span>حفظ التغييرات</span>
+            </Button>
+          </div>
           
           <div className="space-y-6">
             {knockoutMatches.map(match => {
@@ -375,7 +431,7 @@ const Admin = () => {
                     </span>
                   </div>
                   
-                  <div className="flex items-center justify-between py-4">
+                  <div className="flex flex-col md:flex-row items-center justify-between py-4 gap-4">
                     <div className="flex items-center gap-2">
                       <TeamLogo teamId={match.teamAId} />
                       <span className="font-bold">{teamA?.name || 'لم يتحدد بعد'}</span>
@@ -437,7 +493,7 @@ const Admin = () => {
                   
                   <div className="mt-2">
                     <Label className="mb-1 block">الفريق الفائز:</Label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {match.teamAId && (
                         <Button
                           variant={match.winner === match.teamAId ? "default" : "outline"}

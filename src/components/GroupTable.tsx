@@ -7,6 +7,7 @@ import TeamLogo from "./TeamLogo";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import { Download } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GroupTableProps {
   group: string;
@@ -15,6 +16,7 @@ interface GroupTableProps {
 
 const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
   const { teams, standings, tournamentName, organizer, copyright, getCopyrightInfo } = useTournamentStore();
+  const isMobile = useIsMobile();
   
   const groupTeams = useMemo(() => {
     return teams.filter(team => team.group === group);
@@ -83,12 +85,12 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
       <div id={`group-${group}-table`} className="rounded-md overflow-hidden">
         {/* Group Header - Styled like reference image */}
         <div className="bg-tournament-darkNavy py-6 px-4 relative">
-          <h1 className="text-6xl font-bold text-white text-center">المجموعة {group}</h1>
+          <h1 className="text-4xl md:text-6xl font-bold text-white text-center">المجموعة {group}</h1>
           
           {/* Decorative elements from the reference design */}
           <div className="absolute top-[40%] left-0 w-32 h-1 bg-tournament-pink"></div>
           <div className="absolute top-1/4 right-0 w-1 h-1 rounded-full bg-tournament-accent"></div>
-          <div className="absolute bottom-1/4 right-12 w-40 h-1 bg-tournament-accent/60"></div>
+          <div className="absolute bottom-1/4 right-12 w-20 md:w-40 h-1 bg-tournament-accent/60"></div>
         </div>
         
         {/* Teams Header */}
@@ -97,33 +99,33 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
         </div>
         
         {/* Team List */}
-        <div>
+        <div className="overflow-x-auto">
           {groupStandings.map((standing, index) => {
             const team = teams.find(t => t.id === standing.teamId);
             if (!team) return null;
             
             return (
-              <div key={team.id} className="flex items-center bg-tournament-navy border-b border-tournament-navy/70">
+              <div key={team.id} className="flex flex-wrap md:flex-nowrap items-center bg-tournament-navy border-b border-tournament-navy/70">
                 {/* Position indicator */}
-                <div className="w-16 h-16 bg-tournament-pink flex items-center justify-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-tournament-pink flex items-center justify-center">
                   <span className="text-xl font-bold text-white">
                     {index + 1}
                   </span>
                 </div>
                 
                 {/* Team logo */}
-                <div className="w-24 h-24 p-2 flex items-center justify-center">
-                  <TeamLogo teamId={team.id} size="lg" className="border-4 border-white/10 rounded-full bg-white/10" />
+                <div className="w-16 h-16 md:w-24 md:h-24 p-2 flex items-center justify-center">
+                  <TeamLogo teamId={team.id} size={isMobile ? "md" : "lg"} className="border-4 border-white/10 rounded-full bg-white/10" />
                 </div>
                 
                 {/* Team name */}
-                <div className="flex-1 p-4">
-                  <h3 className="text-2xl font-bold text-white">{team.name}</h3>
+                <div className="flex-1 p-2 md:p-4">
+                  <h3 className="text-xl md:text-2xl font-bold text-white">{team.name}</h3>
                 </div>
                 
                 {/* Stats */}
-                <div className="text-right p-4 text-white text-sm">
-                  <div className="space-y-1">
+                <div className="w-full md:w-auto text-right p-2 md:p-4 text-white text-sm">
+                  <div className="grid grid-cols-3 md:grid-cols-1 gap-2 md:space-y-1">
                     <div>النقاط: <span className="font-bold text-lg">{standing.points}</span></div>
                     <div>عدد المباريات: <span className="font-bold">{standing.played}</span></div>
                     <div>ف/ت/خ: <span className="font-bold">{standing.won}/{standing.drawn}/{standing.lost}</span></div>
@@ -136,9 +138,9 @@ const GroupTable = ({ group, showControls = true }: GroupTableProps) => {
           })}
         </div>
         
-        {/* Detailed Stats Table */}
-        <div className="bg-tournament-darkNavy p-4">
-          <Table className="w-full rounded-md overflow-hidden">
+        {/* Detailed Stats Table - Scrollable on mobile */}
+        <div className="bg-tournament-darkNavy p-4 overflow-x-auto">
+          <Table className="w-full rounded-md overflow-hidden min-w-[600px]">
             <TableHeader className="bg-tournament-pink text-white">
               <TableRow>
                 <TableHead className="text-center text-white">المركز</TableHead>

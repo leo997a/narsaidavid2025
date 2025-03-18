@@ -3,10 +3,12 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import MatchCard from '@/components/MatchCard';
 import { useTournamentStore } from '@/store/tournamentStore';
+import { useAuthStore } from '@/store/authStore';
 import { format, parseISO } from 'date-fns';
 
 const Matches = () => {
   const { matches, tournamentName } = useTournamentStore();
+  const { isAuthenticated } = useAuthStore();
 
   // تجميع المباريات حسب التاريخ
   const matchesByDate = matches.reduce((acc, match) => {
@@ -35,16 +37,20 @@ const Matches = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-tournament-accent mb-6">مباريات {tournamentName}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-tournament-accent mb-6">مباريات {tournamentName}</h1>
         
         {sortedDates.map((date) => (
           <div key={date} className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 border-b border-tournament-accent pb-2">
+            <h2 className="text-lg md:text-xl font-semibold mb-4 border-b border-tournament-accent pb-2">
               {formatDate(date)}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {matchesByDate[date].map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard 
+                  key={match.id} 
+                  match={match} 
+                  editable={isAuthenticated} 
+                />
               ))}
             </div>
           </div>
