@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Team, Player, Match, GroupStanding, KnockoutMatch } from '../types';
 
 const initialTeams: Team[] = [
-  { id: 'khoyada-a', name: 'KHOYADA A', logo: 'https://www2.0zz0.com/2025/03/16/18/518716787.png', group: 'A' },
+  { id: 'khoyada-a', name: 'KHOYADA A', logo: 'https://i.postimg.cc/SxzdLgD6/35.png', group: 'A' },
   { id: 'barwar-b', name: 'BARWAR B', logo: 'https://www2.0zz0.com/2025/03/16/18/214508191.jpg', group: 'A' },
   { id: 'hakkare', name: 'HAKKARE', logo: 'https://www2.0zz0.com/2025/03/16/18/177671746.png', group: 'A' },
   
