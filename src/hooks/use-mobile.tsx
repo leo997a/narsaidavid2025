@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  // ابدأ بافتراض أنه ليس جهازًا محمولًا، ثم تحقق بعد تحميل الصفحة
   const [isMobile, setIsMobile] = useState<boolean>(false)
   const [isClient, setIsClient] = useState<boolean>(false)
 
@@ -25,5 +24,8 @@ export function useIsMobile() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  // إذا كنا على الخادم أو لم يتم تحميل الصفحة بعد، نفترض أنه ليس جهاز محمول
+  if (!isClient) return false
+  
   return isMobile
 }

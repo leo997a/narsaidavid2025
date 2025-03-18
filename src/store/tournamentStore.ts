@@ -1,6 +1,10 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Team, Player, Match, GroupStanding, KnockoutMatch } from '../types';
+import { database } from '../lib/firebase';
+import { ref, set, get, onValue, off } from 'firebase/database';
+import { toast } from 'sonner';
 
 const initialTeams: Team[] = [
   { id: 'khoyada-a', name: 'KHOYADA A', logo: 'https://i.postimg.cc/SxzdLgD6/35.png', group: 'A' },
@@ -25,7 +29,7 @@ const initialMatches: Match[] = [
     id: 'day1-match1', 
     homeTeamId: 'khoyada-a', 
     awayTeamId: 'barwar-b', 
-    home score: 1, 
+    homeScore: 1, 
     awayScore: 1, 
     date: '2025-03-14', 
     time: '14:00', 
@@ -222,6 +226,9 @@ type TournamentStore = {
   tournamentName: string;
   organizer: string;
   copyright: string | null;
+  isLoading: boolean;
+  isAdmin: boolean;
+  isSynced: boolean;
   
   addPlayer: (player: Player) => void;
   updatePlayer: (player: Player) => void;
@@ -232,6 +239,8 @@ type TournamentStore = {
   updateTournamentInfo: (name: string, organizer: string, copyright: string) => void;
   updateTeam: (team: Team) => void;
   saveAllData: () => void;
+  syncData: () => void;
+  setIsAdmin: (isAdmin: boolean) => void;
   
   getTeamById: (id: string) => Team | undefined;
   getPlayersByTeam: (teamId: string) => Player[];
@@ -255,6 +264,9 @@ export const useTournamentStore = create<TournamentStore>()(
       tournamentName: 'نرسي 2025',
       organizer: 'لجنة المسابقات',
       copyright: null,
+      isLoading: false,
+      isAdmin: false,
+      isSynced: false,
       
       addPlayer: (player) => {
         set((state) => ({
@@ -471,6 +483,8 @@ export const useTournamentStore = create<TournamentStore>()(
           
           set({ knockoutMatches: qfMatches });
         }
+        
+        get().saveAllData();
       },
       
       updateTournamentInfo: (name: string, organizer: string, copyright: string) => {
@@ -488,11 +502,92 @@ export const useTournamentStore = create<TournamentStore>()(
       },
       
       saveAllData: () => {
-        set(state => ({ ...state }));
+        const state = get();
+        if (!state.isAdmin) {
+          // إذا لم يكن المستخدم مسؤولاً، فقط احفظ البيانات محليًا
+          console.log('حفظ البيانات محليًا فقط، يرجى تسجيل الدخول للمزامنة مع Firebase');
+          return;
+        }
         
-        console.log('تم حفظ جميع البيانات في المستودع المحلي', new Date().toISOString());
+        set((state) => ({ ...state }));
         
+        // حفظ البيانات في Firebase
+        const dataToSave = {
+          teams: state.teams,
+          players: state.players,
+          matches: state.matches,
+          knockoutMatches: state.knockoutMatches,
+          tournamentName: state.tournamentName,
+          organizer: state.organizer,
+          copyright: state.copyright,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        set({ isLoading: true });
+        
+        // حفظ البيانات في Firebase
+        set(ref(database, 'tournament'), dataToSave)
+          .then(() => {
+            set({ isLoading: false, isSynced: true });
+            toast.success('تم مزامنة البيانات بنجاح!');
+            console.log('تم حفظ البيانات وتحديثها في Firebase', new Date().toISOString());
+          })
+          .catch((error) => {
+            set({ isLoading: false });
+            toast.error('فشل في مزامنة البيانات. حاول مرة أخرى.');
+            console.error('خطأ في حفظ البيانات:', error);
+          });
+        
+        // تحديث الترتيب دائمًا
         get().calculateStandings();
+      },
+      
+      syncData: () => {
+        set({ isLoading: true });
+        
+        // الاستماع للتغييرات في البيانات من Firebase
+        const tournamentRef = ref(database, 'tournament');
+        
+        // قم بالاستماع مرة واحدة فقط (لا يحتاج إلى استماع مستمر)
+        get(tournamentRef)
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              
+              // تحديث مخزن البيانات بالبيانات من Firebase
+              set({
+                teams: data.teams || initialTeams,
+                players: data.players || initialPlayers,
+                matches: data.matches || initialMatches,
+                knockoutMatches: data.knockoutMatches || initialKnockoutMatches,
+                tournamentName: data.tournamentName || 'نرسي 2025',
+                organizer: data.organizer || 'لجنة المسابقات',
+                copyright: data.copyright || null,
+                isLoading: false,
+                isSynced: true
+              });
+              
+              toast.success('تم جلب أحدث البيانات بنجاح!');
+              
+              // تحديث الترتيب بعد جلب البيانات
+              get().calculateStandings();
+            } else {
+              // إذا لم تكن هناك بيانات، قم بإنشاء البيانات الأولية
+              get().saveAllData();
+            }
+          })
+          .catch((error) => {
+            set({ isLoading: false });
+            toast.error('فشل في مزامنة البيانات. حاول مرة أخرى.');
+            console.error('خطأ في جلب البيانات:', error);
+          });
+      },
+      
+      setIsAdmin: (isAdmin: boolean) => {
+        set({ isAdmin });
+        if (isAdmin) {
+          get().syncData();
+        }
       },
       
       getTeamById: (id) => {
@@ -519,3 +614,31 @@ export const useTournamentStore = create<TournamentStore>()(
     }
   )
 );
+
+// تهيئة الاستماع إلى تغييرات البيانات
+const initializeDataListener = () => {
+  const tournamentRef = ref(database, 'tournament');
+  
+  // استمع للتغييرات في البيانات
+  onValue(tournamentRef, (snapshot) => {
+    if (snapshot.exists()) {
+      console.log('تم تحديث البيانات في Firebase، جارٍ التحديث المحلي');
+      
+      const store = useTournamentStore.getState();
+      
+      // فقط قم بالتحديث إذا كان المستخدم ليس مسؤولاً (لتجنب دورات التحديث)
+      if (!store.isAdmin && !store.isLoading) {
+        store.syncData();
+      }
+    }
+  }, (error) => {
+    console.error('خطأ في الاستماع للتغييرات:', error);
+  });
+};
+
+// استدعاء وظيفة التهيئة
+try {
+  initializeDataListener();
+} catch (error) {
+  console.error('فشل في تهيئة مستمع البيانات:', error);
+}
